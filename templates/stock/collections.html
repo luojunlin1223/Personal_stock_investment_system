@@ -1,0 +1,40 @@
+{% extends "homepage/homepage.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+{% for item in mystock %}
+    <h3 style="text-align: center">股票信息</h3>
+    <table class="table table-bordered table-hover ">
+        <tr>
+            <th>股票名称</th>
+            <th>股票代码</th>
+            <th>收藏时间</th>
+            <th>止盈止损条件单</th>
+        </tr>
+        <tr>
+            <td>{{ item.stock.name}}</td>
+            <td>{{ item.stock.code }}</td>
+            <td>{{ item.created_on }}</td>
+            {% ifequal item.conditions_sheet None %}
+                 <td>未填写条件单</td>
+            {% else %}
+                 <td>{{ item.conditions_sheet }}</td>
+            {% endifequal %}
+
+        </tr>
+    </table>
+    <form action="{% url 'stock:create_conditions' %}" method="post">
+    {% csrf_token %}
+        <input type="hidden" name="stock_code" value="{{ item.stock.code }}">
+
+      <button type="submit">新建止盈止损条件单</button>
+    </form>
+{% endfor %}
+{% endblock %}
+</body>
+</html>

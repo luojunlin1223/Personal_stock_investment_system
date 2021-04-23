@@ -1,0 +1,30 @@
+{% extends "homepage/homepage.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+<div style="">
+    <div style="float: right">
+        <div style="float: left">
+            <a href="?code={{ code }}&method=daily">日线图</a>
+            <a href="?code={{ code }}&method=weekly">周线图</a>
+            <a href="?code={{ code }}&method=monthly">月线图</a>
+
+        </div>
+
+        <form name="collect" id="collect" method="post" action="/stock/addfavorite/">
+        {% csrf_token %}
+        <input type="hidden" name="code" value="{{ code }}">
+        <button type="submit">收藏</button>
+        </form>
+    </div>
+    <img src="{{ image }}"  alt="">
+</div>
+
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "homepage/homepage.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+     <style>
+        .conditions{
+            margin-left:20px;
+            text-align: center;
+        }
+    </style>
+    <h2 id="name_code"></h2>
+    <h2 id="current_price"></h2>
+    <h2 id="increase"></h2>
+    <h2 id="ups_and_downs"></h2>
+    <h3>触发条件</h3>
+    <form action="{% url 'stock:add_conditions' %}" method="post">
+    {% csrf_token %}
+        <input id="upload_stock" type="hidden" name="stock">
+        <label>
+            参考基准价<input  class="conditions" type="text" name="ref_price" value="2000" required>
+            <br>
+            止赢条件>=<input  class="conditions" type="text" name="s_w" value="+5.0000%" required>
+            <br>
+            止损条件<=<input  class="conditions" type="text" name="s_l" value="-5.0000%" required>
+        </label>
+        <h3>截止日期</h3>
+        <label>
+            <input type="date" name="123" value="" required>
+        </label>
+        <br>
+        <button type="submit">提交创建</button>
+</form>
+    <script type="text/javascript">
+
+        var stock=JSON.parse('{{ rep|safe }}');
+        stock=stock.data[0].fields;
+        document.getElementById("name_code").innerText=stock.name+":"+stock.code;
+        document.getElementById("current_price").innerText="现价："+stock.current_price;
+        document.getElementById("increase").innerText="涨幅："+stock.increase;
+        document.getElementById("ups_and_downs").innerText="涨跌："+stock.ups_and_downs;
+
+        var json={};
+        json["data"]=stock;
+
+        var rep=JSON.stringify(json);
+        document.getElementById("upload_stock").value=rep;
+
+    </script>
+{% endblock %}
+</body>
+</html>

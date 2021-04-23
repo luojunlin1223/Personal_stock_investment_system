@@ -1,0 +1,135 @@
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_jquery %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% load account %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人股票辅助投资系统</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <style>
+        .time_span{
+            color:white;
+            font-weight:bold;
+            padding-right: 50px;
+        }
+        .state_span{
+            color:white;
+            padding-right: 20px;
+        }
+
+    </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="{% url 'showhomepage' %}">个人股票辅助投资系统</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link active" href="{% url 'showhomepage' %}">主页 <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'stock:showinfo' page=1 %}" id="test">股票信息</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" href="{% url 'stock:read_data' %}">读取信息</a>
+        </li>
+          <li class="nav-item">
+          <a class="nav-link disabled" href="{% url 'stock:delete_data' %}">清空数据库</a>
+        </li>
+      </ul>
+      <div>
+          	<script>
+		window.onload = function(){
+			var span = document.getElementById("time_now");
+			var state_span=document.getElementById("state_now");
+			var dateStr = formatDate();
+			// 将时间放置到span内
+			span.innerText = dateStr;
+			// 每隔一秒，再放置一次最新的时间
+			setInterval(function(){
+				span.innerText = formatDate();
+				state_span.innerText=state();
+			},1000);
+			//格式化年月日时分秒
+			function formatDate(){
+				var date = new Date();
+				var year = date.getFullYear();
+				var month = date.getMonth()+1;
+				month = month<10?'0'+month:month;
+				var day = date.getDate();
+				day = day<10?'0'+day:day;
+				var hours = date.getHours();
+				hours = hours<10?'0'+hours:hours;
+				var minutes = date.getMinutes();
+				minutes = minutes<10?'0'+minutes:minutes;
+				var seconds = date.getSeconds();
+				seconds = seconds<10?'0'+seconds:seconds;
+				// 2019-07-23 09:40:30
+				return year+'-'+month+'-'+day+' '+hours+':'+minutes+':'+seconds;
+			}
+			//获取交易状态
+            function state() {
+			    var date = new Date();
+			    var hours=date.getHours();
+			    var minutes=date.getMinutes();
+			    if (hours<9 || hours>15){
+			        return '已收盘';
+                }
+			    else if(hours<=11&&minutes<=30){
+			        return '交易中';
+                }
+			    else if(hours>=13&&minutes>=0){
+			        return '交易中';
+                }
+			    else{
+			        return '盘中休市';
+                }
+
+            }
+
+		}
+	</script>
+            <span id="time_now" class="time_span"></span>
+            <span style="color:white">交易状态：</span>
+            <span id="state_now" class="state_span">获取中...</span>
+      </div>
+      <div>
+        <form class="form-inline my-2 my-lg-0" style="padding-right:30px" action="{% url 'stock:search' %}" method="get">
+          <input class="form-control mr-sm-2" type="search" placeholder="请输入股票代码" aria-label="Search" name="keywords">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+        </form>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        {% if user.is_authenticated %}
+          <li class="nav-item dropdown">
+            <button class="dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ user.username }}<b class="caret"></b>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="{% url 'users:profile' %}">我的信息</a>
+              <a class="dropdown-item" href="{% url 'stock:read_favorite' %}">我的股票</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{% url 'account_logout' %}">退出</a>
+            </div>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class='nav-link' href="{% url 'account_login' %}">登录</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+  {% block content %}
+
+  {% endblock %}
+</body>
+</html>
