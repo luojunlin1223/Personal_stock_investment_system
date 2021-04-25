@@ -1,0 +1,38 @@
+{% extends "homepage/homepage.html" %}
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+     <style>
+        .conditions{
+            margin-left:20px;
+            text-align: center;
+        }
+    </style>
+    <form action="{% url 'stock:change_conditions' %}" method="post">
+    {% csrf_token %}
+        <input id="upload_stock" type="hidden" name="stock">
+        <label>
+            <input type="hidden" name="id" value="{{ conditions.id }}">
+            参考基准价<input  class="conditions" type="text" name="ref_price" value="{{ conditions.ref_price }}" required>
+            <br>
+            止赢条件>=<input  class="conditions" type="text" name="s_w" value="{{ conditions.s_w }}" required>
+            <br>
+            止损条件<=<input  class="conditions" type="text" name="s_l" value="{{ conditions.s_l }}" required>
+        </label>
+        <h3>截止日期</h3>
+        <label>
+            <input type="date" name="date" value="{{ conditions.deadline }}" required>
+        </label>
+        <br>
+        <input type="submit" value="修改">
+        <input type="button" name="submit" onclick="history.back(-1);" value="取消">
+</form>
+{% endblock %}
+
+</body>
+</html>

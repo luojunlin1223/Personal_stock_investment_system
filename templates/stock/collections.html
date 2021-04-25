@@ -23,17 +23,27 @@
             {% ifequal item.conditions_sheet None %}
                  <td>未填写条件单</td>
             {% else %}
-                 <td>{{ item.conditions_sheet }}</td>
+                 <td>
+                     <form action="{% url 'stock:conditions' %}" method="POST">
+                         {% csrf_token %}
+                         <input type="hidden" name="id" value="{{ item.conditions_sheet.id }}">
+                         <button type="submit"> {{ item.conditions_sheet}}</button>
+                     </form>
+                 </td>
             {% endifequal %}
 
         </tr>
     </table>
+    {% ifequal item.conditions_sheet None %}
     <form action="{% url 'stock:create_conditions' %}" method="post">
     {% csrf_token %}
         <input type="hidden" name="stock_code" value="{{ item.stock.code }}">
 
       <button type="submit">新建止盈止损条件单</button>
     </form>
+    {% else %}
+    {% endifequal %}
+
 {% endfor %}
 {% endblock %}
 </body>

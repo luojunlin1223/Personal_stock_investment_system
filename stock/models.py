@@ -64,9 +64,15 @@ class Stock(models.Model):
         verbose_name='股票'
         verbose_name_plural='股票'
 class Condition_Sheet(models.Model):
-    ref_price=models.CharField(verbose_name='参考基准价',max_length=20)
-    s_w = models.CharField(verbose_name='止赢条件', max_length=20)
-    s_l = models.CharField(verbose_name='止损条件', max_length=20)
+    ref_price=models.CharField(verbose_name='参考基准价',max_length=20,null=True)
+    s_w = models.CharField(verbose_name='止赢条件', max_length=20,null=True)
+    s_l = models.CharField(verbose_name='止损条件', max_length=20,null=True)
+    deadline = models.CharField(verbose_name='截至时间',max_length=20,null=True)
+    def __str__(self):
+        return "条件表信息"
+    class Meta:
+        verbose_name="止赢止损表"
+        verbose_name_plural="止赢止损表"
 class Mystock(models.Model):
     user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,verbose_name='用户')
     stock=models.ForeignKey(Stock,on_delete=models.CASCADE,verbose_name='我的股票')

@@ -16,11 +16,20 @@
 
         </div>
 
-        <form name="collect" id="collect" method="post" action="/stock/addfavorite/">
+        <form name="collect" id="collect" method="post" action="{% url "stock:add_favorite" %}">
         {% csrf_token %}
         <input type="hidden" name="code" value="{{ code }}">
         <button type="submit">收藏</button>
         </form>
+        <input type="button" name="submit" onclick="history.back(-1);" value="返回">
+
+        <form name="collect" id="collect" method="post" action="{% url "stock:read_company" %}">
+        {% csrf_token %}
+        <input type="hidden" name="code" value="{{ code }}">
+        <button type="submit">查看公司信息</button>
+        </form>
+
+
     </div>
     <img src="{{ image }}"  alt="">
 </div>

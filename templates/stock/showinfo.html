@@ -77,7 +77,7 @@
             <th>金叉个数</th>
             <th>散户数量</th>
         </tr>
-        {% for foo in stock.data %}
+        {% for foo in rep.data %}
         <tr onclick="tr_click('{{ foo.fields.code }}')">
             <td>{{ foo.fields.code }}</td>
             <td>{{ foo.fields.name }}</td>
@@ -137,6 +137,14 @@
         </tr>
         {% endfor %}
     </table>
+    {% ifequal rep.last_page 0 %}
+        <a href="{% url 'stock:showinfo' page=rep.next_page %}" id="next_page">下一页</a>
+        {% else %}
+        <a href="{% url 'stock:showinfo' page=rep.last_page %}" id="last-page">上一页</a>
+        <a href="{% url 'stock:showinfo' page=rep.next_page %}" id="next_page">下一页</a>
+    {% endifequal %}
+    <p>当前在第{{ rep.now_page }}页</p>
+    <p>一共有{{ rep.total_page }}页</p>
     {% endblock %}
 
 </body>

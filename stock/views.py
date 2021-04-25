@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import math
 import re
 from io import BytesIO
 from itertools import islice
@@ -9,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tushare as ts
 from django.core import serializers
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
 # Create your views here.
 from matplotlib import ticker
@@ -25,7 +26,7 @@ def showinfo(request, page):
     items_per_page = 10
     last_page = page - 1
     nex_page = page + 1
-
+    total=Stock.objects.all().count()
     stock = Stock.objects.all().order_by('code')[(page - 1) * items_per_page:page * items_per_page]
 
     json_data=serializers.serialize('json',stock)
@@ -34,15 +35,19 @@ def showinfo(request, page):
     #Json格式转化
     data={}
     data['status']=0
+    data['total']=total
+    data['total_page']=math.ceil(total/items_per_page)
     data['items_per_page']=10
     data['last_page']=last_page
+    data['now_page']=last_page+1
     data['next_page']=nex_page
     data['data'] = json_data
 
-
+    #Json:
+    #{'status': 0, 'items_per_page': 10, 'last_page': 0, 'next_page': 2, 'data':data}
     if len(stock) != 0:
         return render(request, 'stock/showinfo.html',
-                      {'stock': data})
+                      {'rep': data})
     else:
         return HttpResponse(content='超出数据范围！')
 
@@ -51,12 +56,26 @@ def showdetail(request):
     method=request.GET.get("method")
     ts.set_token('f281dbc422d80e2350e94b1878bd3b86971de985641877fc42ccd836')
     pro = ts.pro_api()
+    now=datetime.datetime.today()
+    start_day=now-datetime.timedelta(days=150)
+    start_week=now-datetime.timedelta(days=365*2)
+    start_month=now-datetime.timedelta(days=365*9)
+    def check_date(date):
+        if date.month < 10:
+            month = '0' + str(date.month)
+        else:
+            month = str(date.month)
+        if date.day < 10:
+            day = '0' + str(date.day)
+        else:
+            day = str(now.day)
+        return str(date.year)+month+day
     if method == 'daily':
-        df = pro.daily(ts_code=code, start_date='20200901', end_date='20210409')
+        df = pro.daily(ts_code=code, start_date=check_date(start_day), end_date=check_date(now))
     elif method == 'weekly':
-        df = pro.weekly(ts_code=code, start_date='20200901', end_date='20210409')
+        df = pro.weekly(ts_code=code, start_date=check_date(start_week), end_date=check_date(now))
     elif method == 'monthly':
-        df = pro.monthly(ts_code=code, start_date='20200901', end_date='20210409')
+        df = pro.monthly(ts_code=code, start_date=check_date(start_month), end_date=check_date(now))
     else:
         return HttpResponse('None')
     # 原始数据按照日期降序排列
@@ -193,7 +212,6 @@ def add_favorite(request):
 
 def read_favorite(request):
     mystock=Mystock.objects.all()
-
     return render(request,"stock/collections.html",{'mystock':mystock})
 
 def create_condisitons(request):
@@ -210,7 +228,6 @@ def create_condisitons(request):
 
 # {'status': 0, 'data': [{'model': 'stock.stock', 'pk': 13059, 'fields': {'code': 'SH600052', 'name': '浙江广厦', 'increase': '+10.11', 'current_price': '3.05', 'ups_and_downs': '+0.28', ......
 
-    print(data)
     return render(request,"stock/createconditions.html",{'rep':json.dumps(data)})
 
 
@@ -219,7 +236,40 @@ def add_conditions(request):
     ref_price=request.POST.get("ref_price")
     s_w=request.POST.get("s_w")
     s_l=request.POST.get("s_l")
-    print(stock)
-   # Condition_Sheet.objects.update_or_create(ref_price=ref_price,s_l=s_l,s_w=s_w)
+    date=request.POST.get("date")
+    stock=json.loads(stock)
+    code=stock["data"]["code"]
+    user=request.user
+    mystock=Mystock.objects.filter(stock__code=code,user=user)
 
-    return HttpResponse(stock+ref_price+s_w+s_l)
+    var = Condition_Sheet.objects.update_or_create(ref_price=ref_price, s_l=s_l, s_w=s_w,deadline=date)[0]
+
+    mystock.update(conditions_sheet=var)
+
+    return HttpResponseRedirect('/stock/collections/')
+
+def conditions(request):
+    id=request.POST.get("id")
+    conditions=Condition_Sheet.objects.get(pk=id)
+    return render(request,'stock/conditions.html',{'conditions':conditions})
+def change_conditions(request):
+    id = request.POST.get("id")
+    ref_price=request.POST.get("ref_price")
+    s_w=request.POST.get("s_w")
+    s_l=request.POST.get("s_l")
+    date=request.POST.get("date")
+    conditions = Condition_Sheet.objects.get(pk=id)
+    conditions.ref_price=ref_price
+    conditions.s_w=s_w
+    conditions.s_l=s_l
+    conditions.deadline=date
+    conditions.save()
+    return HttpResponseRedirect('/stock/collections/')
+
+def read_company(request):
+    code=request.POST.get("code")
+    pro = ts.pro_api()
+    df = pro.stock_company(ts_code=code)
+    json_data=df.to_json(orient="records",force_ascii=False)
+    json_data=json.loads(json_data)
+    return render(request,"stock/company.html",{'rep':json_data[0]})

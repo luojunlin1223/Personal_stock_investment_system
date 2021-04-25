@@ -1,0 +1,23 @@
+{% extends "homepage/homepage.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>uc
+{% block content %}
+    <p>交易所:{{ rep.exchange }}</p>
+    <P>法人代表:{{ rep.chairman }}</P>
+    <P>总经理:{{ rep.manager }}</P>
+    <P>秘书:{{ rep.secretary }}</P>
+    <P>注册资本:{{ rep.reg_capital }}</P>
+    <P>注册日期:{{ rep.setup_date }}</P>
+    <P>省份:{{ rep.province }}</P>
+    <P>城市:{{ rep.city }}</P>
+    <P>网站:{{ rep.website }}</P>
+    <P>邮箱:{{ rep.email }}</P>
+    <P>员工人数:{{ rep.employees }}</P>
+{% endblock %}
+</body>
+</html>
