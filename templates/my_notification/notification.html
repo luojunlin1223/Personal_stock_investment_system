@@ -1,0 +1,107 @@
+{% extends "homepage/homepage.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+    <h3 style="text-align: center">个人消息</h3>
+    <div class="btn-toolbar" style="background-color: cornflowerblue">
+        <div class="btn-group">
+            <script type="text/javascript">
+                var isCheckAll=false;
+                function swapCheck(){
+                    if(isCheckAll){
+                        $("input[type='checkbox']").each(function(){
+                            this.checked=false;
+                        });
+                        isCheckAll=false;
+                    }else{
+                        $("input[type='checkbox']").each(function(){
+                            this.checked=true;
+                        });
+                        isCheckAll=true;
+                    }
+                }
+            </script>
+            <a class="btn" onclick="swapCheck()">全选</a>
+            <script type="text/javascript">
+                function Delete(){
+                    var value="";
+                    input=document.getElementsByClassName("check");
+                    for(var i=0;i<input.length;i++){
+                        if (input[i].checked){
+                            result=input[i].value;
+                            value=value+result+',';
+                        }
+                    }
+                    var getValues=document.getElementById("getValues");
+                    getValues.value=value;
+                    document.getElementById("delete_notifications").submit();
+                    console.log(value);　
+                }
+                function Sign(){
+                    var value="";
+                    input=document.getElementsByClassName("check");
+                    for(var i=0;i<input.length;i++){
+                        if (input[i].checked){
+                            result=input[i].value;
+                            value=value+result+',';
+                        }
+                    }
+                    var getValues=document.getElementById("getValues_1");
+                    getValues.value=value;
+                    document.getElementById("sign_notifications").submit();
+                    console.log(value);　
+                }
+               　
+            </script>
+            <form id="delete_notifications" action="{% url 'my_notification:delete_notifications' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="deleteValues" id="getValues">
+              <a class="btn" onclick="Delete()">删除</a>
+            </form>
+            <form id="sign_notifications" action="{% url 'my_notification:sign_notifications' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="signValues" id="getValues_1">
+              <a class="btn" onclick="Sign()">标记为已读</a>
+            </form>
+        </div>
+    </div>
+    <table class="table table-bordered table-hover " style="cursor:pointer">
+        <tr>
+            <th>是否已读</th>
+            <th>发件人</th>
+            <th>通知内容</th>
+            <th>发送时间</th>
+        </tr>
+        {% for item in data %}
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" class="check" value="{{ item.id }}">
+                </label>
+                {% if item.unread %}
+                <img src="{% static 'my_notification/unread.jpg' %}" alt="">
+                 未读
+                {% else %}
+                <img src="{% static 'my_notification/read.jpg' %}" alt="">
+                 已读
+                {% endif %}
+            </td>
+            <td>{{ item.actor }}</td>
+            <td>
+                     收藏的
+                <a href="{% url 'stock:read_favorite' %}">{{ item.target }}</a>
+                {{ item.verb }}
+            </td>
+            <td>{{ item.timestamp }}</td>
+        </tr>
+         {% endfor %}
+    </table>
+{% endblock %}
+</body>
+</html>

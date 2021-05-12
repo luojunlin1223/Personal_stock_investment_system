@@ -11,9 +11,9 @@
 </head>
 <body>
     {% block content %}
-        <script>
+        <script type="text/javascript">
         function tr_click(code) {
-           var where=code.substring(0,2)
+           var where=code.substring(0,2);
            code=code.substring(2,8)+'.'+where;
            window.location.replace("{% url 'stock:show_detail' %}"+"?code="+code+"&method="+"daily");
         }

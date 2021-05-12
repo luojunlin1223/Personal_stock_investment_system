@@ -25,4 +25,8 @@ urlpatterns = [
     path('accounts/',include('users.urls')),
     #股票urls
     path('stock/',include('stock.urls')),
+    #通知urls
+    path('inbox/notifications/',include('notifications.urls',namespace='notifications')),
+    #消息urls
+    path('notifications/',include('my_notification.urls')),
 ]

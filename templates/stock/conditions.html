@@ -30,8 +30,13 @@
         </label>
         <br>
         <input type="submit" value="修改">
+        </form>
+    <form action="{% url 'stock:delete_conditions' %}" method="post">
+        {% csrf_token %}
+            <input type='hidden' name="id" value="{{ conditions.id }}">
+            <input type="submit" value="删除">
+        </form>
         <input type="button" name="submit" onclick="history.back(-1);" value="取消">
-</form>
 {% endblock %}
 
 </body>

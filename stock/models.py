@@ -63,6 +63,7 @@ class Stock(models.Model):
     class Meta:
         verbose_name='股票'
         verbose_name_plural='股票'
+
 class Condition_Sheet(models.Model):
     ref_price=models.CharField(verbose_name='参考基准价',max_length=20,null=True)
     s_w = models.CharField(verbose_name='止赢条件', max_length=20,null=True)
@@ -76,6 +77,10 @@ class Condition_Sheet(models.Model):
 class Mystock(models.Model):
     user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,verbose_name='用户')
     stock=models.ForeignKey(Stock,on_delete=models.CASCADE,verbose_name='我的股票')
+
+    buy_count=models.CharField(verbose_name='买入数量',null=True,max_length=20)
+    buy_price=models.CharField(verbose_name='买入单价',null=True,max_length=20)
+
     created_on=models.DateTimeField(auto_now_add=True,verbose_name='收藏时间')
     conditions_sheet=models.ForeignKey(Condition_Sheet,on_delete=models.CASCADE,verbose_name='止盈止损条件单',null=True)
     def __str__(self):

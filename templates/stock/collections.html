@@ -7,21 +7,183 @@
 </head>
 <body>
 {% block content %}
-{% for item in mystock %}
-    <h3 style="text-align: center">股票信息</h3>
+
+    <h3 style="text-align: center">我的股票</h3>
+    <div class="btn-toolbar" style="background-color: cornflowerblue">
+        <div class="btn-group">
+            <script type="text/javascript">
+                var isCheckAll=false;
+                function swapCheck(){
+                    if(isCheckAll){
+                        $("input[type='checkbox']").each(function(){
+                            this.checked=false;
+                        });
+                        isCheckAll=false;
+                    }else{
+                        $("input[type='checkbox']").each(function(){
+                            this.checked=true;
+                        });
+                        isCheckAll=true;
+                    }
+                }
+            </script>
+            <a class="btn" onclick="swapCheck()">全选</a>
+
+            <script type="text/javascript">
+                function Delete(){
+                    let value = "";
+                    const input = document.getElementsByClassName("check");
+                    for(let i=0; i<input.length; i++){
+                        if (input[i].checked){
+                            result=input[i].value;
+                            value=value+result+',';
+                        }
+                    }
+                    const getValues = document.getElementById("getValues");
+                    getValues.value=value;
+                    document.getElementById("delete_collections").submit();
+                    console.log(value);　
+                }
+            </script>
+            <form id="delete_collections" action="{% url 'stock:delete_favorite' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="deleteValues" id="getValues">
+              <a class="btn" onclick="Delete()">删除</a>
+            </form>
+        </div>
+    </div>
     <table class="table table-bordered table-hover ">
         <tr>
+            <th></th>
             <th>股票名称</th>
             <th>股票代码</th>
+            <th>股票类型</th>
+            <th>买入数量</th>
+            <th>买入单价</th>
+            <th>盈利或亏损</th>
             <th>收藏时间</th>
             <th>止盈止损条件单</th>
         </tr>
+        {% for item in mystock %}
         <tr>
-            <td>{{ item.stock.name}}</td>
+            <script>
+            function tr_click(code) {
+               var where=code.substring(0,2)
+               code=code.substring(2,8)+'.'+where;
+               window.location.replace("{% url 'stock:show_detail' %}"+"?code="+code+"&method="+"daily");
+            }
+            </script>
+            <td><label>
+                <input type="checkbox" class="check" value="{{ item.id }}">
+            </label></td>
+            <td><a href="#" onclick="tr_click('{{ item.stock.code }}')">{{ item.stock.name}}</a></td>
             <td>{{ item.stock.code }}</td>
+            <td>{{ item.stock.industry }}</td>
+            <td>
+                {% if item.buy_count %}
+                <p>{{ item.buy_count }}</p>
+                {% else %}
+                    <div id="ajax">
+                        <p><a style="color:red">X </a>还没有填写？</p>
+                            <label>
+                                <input type="number" id="count" onblur="alter_count({{ item.id }})">
+                            </label>
+                    </div>
+                {% endif %}
+            </td>
+            <td>
+                {% if item.buy_price %}
+                <p>{{ item.buy_price }}</p>
+                {% else %}
+                    <div id="ajax">
+                        <p><a style="color:red">X </a>还没有填写？</p><label>
+                        <input type="number" id="price" onblur="alter_price({{ item.id }})">
+                    </label>
+                    </div>
+                {% endif %}
+            </td>
+            <td>
+                <p type="hidden" id="interest"></p>
+            </td>
             <td>{{ item.created_on }}</td>
+            <script>
+                    interest();
+                    function alter_price(number){
+                        const price = document.getElementById('price');
+                        const ajax=document.getElementById('ajax');
+                        if(price.value.length===0){
+                            alert("输入的数字不能为空！");
+                        }
+                        else{
+                            $.ajax(
+                                    {
+                                        url: '{% url 'stock:alter_favorite_price' %}',
+                                        type: 'post',
+                                        data:{
+                                            'id':number,
+                                            'price_input':price.value,
+                                            'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
+                                        },
+                                        success: function(data){
+                                            const node = document.createElement('p');
+                                            node.innerText=data;
+                                            ajax.replaceWith(node);
+                                            interest();
+                                        },
+                                    }
+                                )
+                            }
+                        }
+                    function alter_count(number){
+                        const count = document.getElementById('count');
+                        const ajax=document.getElementById('ajax');
+                        if((count.value).length===0){
+                            alert("输入的数字不能为空！");
+                        }
+                        else{
+                            $.ajax(
+                                    {
+                                        url: '{% url 'stock:alter_favorite_count' %}',
+                                        type: 'post',
+                                        data:{
+                                            'id':number,
+                                            'count_input':count.value,
+                                            'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
+                                        },
+                                        success: function(data){
+                                            const node = document.createElement('p');
+                                            node.innerText=data;
+                                            ajax.replaceWith(node);
+                                        },
+                                    }
+                                )
+                        }
+                            }
+                    function interest(){
+                        const p=document.getElementById('interest');
+                    $.ajax(
+                        {
+                            url: '{% url 'stock:interest' %}',
+                            type: 'post',
+                            data:{
+                                'id':'{{ item.id }}',
+                                'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
+                            },
+                            success: function(data){
+                                p.type='text';
+                                p.innerText=data;
+                            },
+                        }
+                    )
+                    }
+                </script>
             {% ifequal item.conditions_sheet None %}
-                 <td>未填写条件单</td>
+                 <td>
+                     <form action="{% url 'stock:create_conditions' %}" method="post">
+                        {% csrf_token %}
+                     <input type="hidden" name="stock_code" value="{{ item.stock.code }}">
+                         <button type="submit">新建止盈止损条件单</button>
+                     </form></td>
             {% else %}
                  <td>
                      <form action="{% url 'stock:conditions' %}" method="POST">
@@ -31,20 +193,9 @@
                      </form>
                  </td>
             {% endifequal %}
-
         </tr>
+        {% endfor %}
     </table>
-    {% ifequal item.conditions_sheet None %}
-    <form action="{% url 'stock:create_conditions' %}" method="post">
-    {% csrf_token %}
-        <input type="hidden" name="stock_code" value="{{ item.stock.code }}">
-
-      <button type="submit">新建止盈止损条件单</button>
-    </form>
-    {% else %}
-    {% endifequal %}
-
-{% endfor %}
 {% endblock %}
 </body>
 </html>

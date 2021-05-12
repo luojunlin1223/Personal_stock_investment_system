@@ -1,9 +1,11 @@
+{% load notifications_tags %}
 {% load bootstrap4 %}
 {% bootstrap_css %}
 {% bootstrap_jquery %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% load account %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,8 +100,10 @@
 		}
 	</script>
             <span id="time_now" class="time_span"></span>
-            <span style="color:white">交易状态：</span>
-            <span id="state_now" class="state_span">获取中...</span>
+            <div class="status">
+                <span style="color:white">交易状态：</span>
+                <span id="state_now" class="state_span">获取中...</span>
+            </div>
       </div>
       <div>
         <form class="form-inline my-2 my-lg-0" style="padding-right:30px" action="{% url 'stock:search' %}" method="get">
@@ -114,8 +118,25 @@
               {{ user.username }}<b class="caret"></b>
             </button>
             <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="navbarDropdown">
+            {% notifications_unread as unread_count %}
+
+                 <a class="dropdown-item" href="{% url 'my_notification:read_notifications' %}">
+                     {% if unread_count %}
+                        <svg viewBox="0 0 8 8"
+                             width="8px"
+                             height="8px">
+                            <circle cx="4"
+                                    cy="4"
+                                    r="4"
+                                    fill="#ff6b6b"
+                                    ></circle>
+                        </svg>
+                     {% endif %}
+                  我的消息</a>
+
               <a class="dropdown-item" href="{% url 'users:profile' %}">我的信息</a>
               <a class="dropdown-item" href="{% url 'stock:read_favorite' %}">我的股票</a>
+              <a class="dropdown-item" >我的财务报告</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="{% url 'account_logout' %}">退出</a>
             </div>

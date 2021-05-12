@@ -7,23 +7,7 @@
 </head>
 <body>
 {% block content %}
-<!--消息块-->
-{% if messages %}
-<div class="container">
-    {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-secondary{% endif %} alert-dismissible rounded-0 fade show" role="alert">
-        {{ message }}
-        {% if not user.email_verified %}
-        <a href="{% url 'account_email' %}" style="text-decoration:none">验证邮箱.</a>
-        {% endif %}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
+<h3 style="text-align: center">个人资料</h3>
 {% if user.is_authenticated %}
 <a href="{% url 'users:change_profile' %}">修改资料</a>
 {% endif %}

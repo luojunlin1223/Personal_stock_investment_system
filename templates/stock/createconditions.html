@@ -22,7 +22,7 @@
     {% csrf_token %}
         <input id="upload_stock" type="hidden" name="stock">
         <label>
-            参考基准价<input  class="conditions" type="text" name="ref_price" value="2000" required>
+            参考基准价<input  id='price' class="conditions" type="text" name="ref_price" value="2000" required>
             <br>
             止赢条件>=<input  class="conditions" type="text" name="s_w" value="+5.0000%" required>
             <br>
@@ -43,6 +43,7 @@
         document.getElementById("current_price").innerText="现价："+stock.current_price;
         document.getElementById("increase").innerText="涨幅："+stock.increase;
         document.getElementById("ups_and_downs").innerText="涨跌："+stock.ups_and_downs;
+        document.getElementById("price").value=stock.current_price;
 
         var json={};
         json["data"]=stock;

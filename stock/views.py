@@ -1,24 +1,22 @@
-import base64
+import datetime
 import datetime
 import json
 import math
 import re
-from io import BytesIO
 from itertools import islice
 
 import matplotlib.pyplot as plt
-import numpy as np
 import tushare as ts
 from django.core import serializers
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect
+
 # Create your views here.
-from matplotlib import ticker
-from mplfinance.original_flavor import candlestick_ochl
 
 plt.rcParams['font.sans-serif'] = ['SimHei']   # 用来正常显示中文标签
+ts.set_token('f281dbc422d80e2350e94b1878bd3b86971de985641877fc42ccd836')
+pro = ts.pro_api()
 from stock.models import Stock, Mystock, Condition_Sheet
-
 
 def showinfo(request, page):
     global df
@@ -52,14 +50,6 @@ def showinfo(request, page):
         return HttpResponse(content='超出数据范围！')
 
 def showdetail(request):
-    code=request.GET.get("code")
-    method=request.GET.get("method")
-    ts.set_token('f281dbc422d80e2350e94b1878bd3b86971de985641877fc42ccd836')
-    pro = ts.pro_api()
-    now=datetime.datetime.today()
-    start_day=now-datetime.timedelta(days=150)
-    start_week=now-datetime.timedelta(days=365*2)
-    start_month=now-datetime.timedelta(days=365*9)
     def check_date(date):
         if date.month < 10:
             month = '0' + str(date.month)
@@ -70,47 +60,87 @@ def showdetail(request):
         else:
             day = str(now.day)
         return str(date.year)+month+day
+    code=request.GET.get("code")
+    method=request.GET.get("method")
+    now=datetime.datetime.today()
+
     if method == 'daily':
-        df = pro.daily(ts_code=code, start_date=check_date(start_day), end_date=check_date(now))
+        start = now - datetime.timedelta(days=150)
+        start=check_date(start)
+        now=check_date(now)
+        df = pro.daily(ts_code=code, start_date=start, end_date=now)
+        #得到股票数据
     elif method == 'weekly':
-        df = pro.weekly(ts_code=code, start_date=check_date(start_week), end_date=check_date(now))
+        start = now - datetime.timedelta(days=365 * 2)
+        start = check_date(start)
+        now = check_date(now)
+        df = pro.weekly(ts_code=code, start_date=start, end_date=now)
     elif method == 'monthly':
-        df = pro.monthly(ts_code=code, start_date=check_date(start_month), end_date=check_date(now))
+        start = now - datetime.timedelta(days=365 * 9)
+        start = check_date(start)
+        now = check_date(now)
+        df = pro.monthly(ts_code=code, start_date=start, end_date=now)
     else:
-        return HttpResponse('None')
-    # 原始数据按照日期降序排列
-    df = df.sort_values(by='trade_date', ascending=True)
-    df['dates'] = np.arange(0, len(df))
-    fig, ax = plt.subplots(figsize=(10, 7))
-    ###candlestick_ochl()函数的参数
-    # ax 绘图Axes的实例
-    # quotes  序列（时间，开盘价，收盘价，最高价，最低价） 时间是float类型，date必须转换为float
-    # width    图像中红绿矩形的宽度,代表天数
-    # colorup  收盘价格大于开盘价格时的颜色
-    # colordown   低于开盘价格时矩形的颜色
-    # alpha      矩形的颜色的透明度
-    candlestick_ochl(ax, quotes=df[['dates', 'open', 'close', 'high', 'low']].values,
-                     width=0.55, colorup='r', colordown='g', alpha=0.95)
-    date_tickers = df['trade_date'].values
+        return HttpResponse('没有找到相关数据！')
+    # # 原始数据按照日期降序排列
+    # df = df.sort_values(by='trade_date', ascending=True)
+    # df['dates'] = np.arange(0, len(df))
+    # fig, ax = plt.subplots(figsize=(10, 7))
+    # ###candlestick_ochl()函数的参数
+    # # ax 绘图Axes的实例
+    # # quotes  序列（时间，开盘价，收盘价，最高价，最低价） 时间是float类型，date必须转换为float
+    # # width    图像中红绿矩形的宽度,代表天数
+    # # colorup  收盘价格大于开盘价格时的颜色
+    # # colordown   低于开盘价格时矩形的颜色
+    # # alpha      矩形的颜色的透明度
+    # candlestick_ochl(ax, quotes=df[['dates', 'open', 'close', 'high', 'low']].values,
+    #                  width=0.55, colorup='r', colordown='g', alpha=0.95)
+    # date_tickers = df['trade_date'].values
+    #
+    # def format_date(x, pos):
+    #     if (x < 0) or (x > len(date_tickers) - 1):
+    #         return ''
+    #     return date_tickers[int(x)]
+    #
+    # ax.xaxis.set_major_formatter(ticker.FuncFormatter(format_date))  # 按一定规则选取并在水平轴上显示时间刻度
+    # plt.xticks(rotation=30)  # 设置日期刻度旋转的角度
+    # ax.set_ylabel('交易价格')
+    # plt.title(code)
+    # plt.grid(True)  # 添加网格，可有可无，只是让图像好看一些
+    # plt.xlabel('交易日期')
+    #
+    # sio = BytesIO()
+    # plt.savefig(sio, format='png')
+    # data = base64.encodebytes(sio.getvalue()).decode()
+    # src = 'data:image/png;base64,' + str(data)
+    # # 前端只需要将 <img\> 标签的 src 属性赋值为后端发送的 Base64 字符串即可
+    json_data=df.to_json(orient="records", force_ascii=False)
+    json_data = json.loads(json_data)
+    list=[]
+    volume = []
+    dates=[]
 
-    def format_date(x, pos):
-        if (x < 0) or (x > len(date_tickers) - 1):
-            return ''
-        return date_tickers[int(x)]
+    for item in json_data:
+        open= item['open']
+        close = item['close']
+        low = item['low']
+        high = item['high']
+        volume_list=item['vol']
+        item_list=[open,close,low,high]
+        list.append(item_list)
+        volume.append(volume_list)
 
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(format_date))  # 按一定规则选取并在水平轴上显示时间刻度
-    plt.xticks(rotation=30)  # 设置日期刻度旋转的角度
-    ax.set_ylabel('交易价格')
-    plt.title(code)
-    plt.grid(True)  # 添加网格，可有可无，只是让图像好看一些
-    plt.xlabel('交易日期')
+        date=item['trade_date']
+        date=date[:4]+'-'+date[4:6]+'-'+date[6:8]
+        dates.append(date)
+    list.reverse()
+    dates.reverse()
+    volume.reverse()
+    #日期错误
+    #申请接口得到的数据是时间倒序的
+    return render(request, 'stock/detail.html', {'code': code,'dates':dates,'data':list,'volumes':volume})
 
-    sio = BytesIO()
-    plt.savefig(sio, format='png')
-    data = base64.encodebytes(sio.getvalue()).decode()
-    src = 'data:image/png;base64,' + str(data)
-    # 前端只需要将 <img\> 标签的 src 属性赋值为后端发送的 Base64 字符串即可
-    return render(request, 'stock/detail.html', {'image': src, 'code': code})
+
 
 def read_data(request):
     with open('E:/PycharmProjects/Personal_stock_investment_system/stock/data/Table.txt', 'r') as f:
@@ -185,6 +215,8 @@ def delete_data(request):
     Stock.objects.all().delete()
     return HttpResponse('200')
 
+
+
 def search(request):
     keywords=request.GET.get("keywords")
     results=Stock.objects.filter(code=keywords)
@@ -192,6 +224,9 @@ def search(request):
         return HttpResponse('Noting!')
     else:
         return render(request,'stock/searchresult.html',{'results':results})
+
+
+
 
 def add_favorite(request):
     user=request.user
@@ -204,15 +239,41 @@ def add_favorite(request):
     if request.user.is_authenticated:
         if len(Mystock.objects.filter(user=user, stock=stock)) == 0:
             Mystock.objects.update_or_create(user=user, stock=stock, created_on=created_on)
-            return HttpResponse(content='收藏成功！')
+            return redirect('/stock/collections/')
         else:
             return HttpResponse(content='已经收藏过了！')
     else:
         return HttpResponse(content='请先登录！')
 
 def read_favorite(request):
-    mystock=Mystock.objects.all()
+    mystock=Mystock.objects.filter(user=request.user)
     return render(request,"stock/collections.html",{'mystock':mystock})
+
+def delete_favorite(request):
+    deleteValues = request.POST.get("deleteValues").split(',')
+    for item in deleteValues:
+        if item == '':
+            pass
+        else:
+            Mystock.objects.filter(id=item)[0].delete()
+    return HttpResponseRedirect('/stock/collections')
+
+def alter_favorite_price(request):
+    id=request.POST.get("id")
+    price_input=request.POST.get("price_input")
+    mystock = Mystock.objects.filter(id=id)[0]
+    mystock.buy_price = price_input
+    mystock.save()
+    return HttpResponse(price_input)
+
+def alter_favorite_count(request):
+    id=request.POST.get("id")
+    count_input=request.POST.get("count_input")
+    mystock = Mystock.objects.filter(id=id)[0]
+    mystock.buy_count=count_input
+    mystock.save()
+    return HttpResponse(count_input)
+
 
 def create_condisitons(request):
     stock_code=request.POST.get("stock_code")
@@ -229,7 +290,6 @@ def create_condisitons(request):
 # {'status': 0, 'data': [{'model': 'stock.stock', 'pk': 13059, 'fields': {'code': 'SH600052', 'name': '浙江广厦', 'increase': '+10.11', 'current_price': '3.05', 'ups_and_downs': '+0.28', ......
 
     return render(request,"stock/createconditions.html",{'rep':json.dumps(data)})
-
 
 def add_conditions(request):
     stock = request.POST.get("stock")
@@ -252,6 +312,7 @@ def conditions(request):
     id=request.POST.get("id")
     conditions=Condition_Sheet.objects.get(pk=id)
     return render(request,'stock/conditions.html',{'conditions':conditions})
+
 def change_conditions(request):
     id = request.POST.get("id")
     ref_price=request.POST.get("ref_price")
@@ -266,6 +327,22 @@ def change_conditions(request):
     conditions.save()
     return HttpResponseRedirect('/stock/collections/')
 
+def delete_condisitons(request):
+    id = request.POST.get("id")
+    mystock=Mystock.objects.filter(conditions_sheet_id=id)[0]
+    mystock.conditions_sheet=None
+    mystock.save()
+    conditions = Condition_Sheet.objects.get(pk=id)
+    conditions.delete()
+
+    return HttpResponseRedirect('/stock/collections/')
+
+
+
+
+
+
+
 def read_company(request):
     code=request.POST.get("code")
     pro = ts.pro_api()
@@ -273,3 +350,22 @@ def read_company(request):
     json_data=df.to_json(orient="records",force_ascii=False)
     json_data=json.loads(json_data)
     return render(request,"stock/company.html",{'rep':json_data[0]})
+
+
+def interest(request):
+    id=request.POST.get('id')
+    mystock=Mystock.objects.filter(id=id)[0]
+    price = mystock.buy_price
+    if price is None:
+        return HttpResponse('价格未填写')
+    code=mystock.stock.code
+    code=code[2:len(code)]+'.'+code[:2]
+    df = pro.daily(ts_code=code).to_json()
+    df = json.loads(df)
+    open=df.get('open')['0']
+    recent=float(price)
+    now=float(open)
+    if recent<now:
+        return HttpResponse('盈利')
+    else:
+        return HttpResponse('未盈利')
