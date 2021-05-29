@@ -8265,7 +8265,7 @@ function makeStyleMapper(properties, ignoreParent) {
       if (val != null) {
         style[properties[i][0]] = val;
       }
-    } // TODO Text or image?
+    } // TODO Text or images?
 
 
     return style;
@@ -14177,8 +14177,8 @@ function registerShape(name, ShapeClass) {
  *
  * (2) In the features like `custom series`, `graphic component`, the user input
  * `{tpye: 'xxx'}` does not only specify shapes but also specify other graphic
- * elements like `'group'`, `'text'`, `'image'` or event `'path'`. Those names
- * are reserved names, that is, if some user register a shape named `'image'`,
+ * elements like `'group'`, `'text'`, `'images'` or event `'path'`. Those names
+ * are reserved names, that is, if some user register a shape named `'images'`,
  * the shape will not be used. If we intending to add some more reserved names
  * in feature, that might bring break changes (disable some existing user shape
  * names). But that case probably rearly happen. So we dont make more mechanism
@@ -14215,8 +14215,8 @@ function makePath(pathData, opts, rect, layout) {
   return path;
 }
 /**
- * Create a image element from image url
- * @param imageUrl image url
+ * Create a images element from images url
+ * @param imageUrl images url
  * @param opts options
  * @param rect constrain rect
  * @param layout 'center' or 'cover'. Default to be 'cover'
@@ -14649,7 +14649,7 @@ function clipRectByRect(targetRect, rect) {
     };
   }
 }
-function createIcon(iconStr, // Support 'image://' or 'path://' or direct svg path.
+function createIcon(iconStr, // Support 'images://' or 'path://' or direct svg path.
 opt, rect) {
   var innerOpts = extend({
     rectHover: true
@@ -14665,7 +14665,7 @@ opt, rect) {
   };
 
   if (iconStr) {
-    return iconStr.indexOf('image://') === 0 ? (style.image = iconStr.slice(8), defaults(style, rect), new ZRImage(innerOpts)) : makePath(iconStr.replace('path://', ''), innerOpts, rect, 'center');
+    return iconStr.indexOf('images://') === 0 ? (style.image = iconStr.slice(8), defaults(style, rect), new ZRImage(innerOpts)) : makePath(iconStr.replace('path://', ''), innerOpts, rect, 'center');
   }
 }
 /**
@@ -26454,7 +26454,7 @@ function symbolPathSetColor(color, innerColor) {
 
 function createSymbol(symbolType, x, y, w, h, color, // whether to keep the ratio of w/h,
 keepAspect) {
-  // TODO Support image object, DynamicImage.
+  // TODO Support images object, DynamicImage.
   var isEmpty = symbolType.indexOf('empty') === 0;
 
   if (isEmpty) {
@@ -26463,7 +26463,7 @@ keepAspect) {
 
   var symbolPath;
 
-  if (symbolType.indexOf('image://') === 0) {
+  if (symbolType.indexOf('images://') === 0) {
     symbolPath = makeImage(symbolType.slice(8), new BoundingRect(x, y, w, h), keepAspect ? 'center' : 'cover');
   } else if (symbolType.indexOf('path://') === 0) {
     symbolPath = makePath(symbolType.slice(7), {}, new BoundingRect(x, y, w, h), keepAspect ? 'center' : 'cover');
@@ -27128,10 +27128,10 @@ var decalMap = new WeakMap();
 var decalCache = new LRU(100);
 var decalKeys = ['symbol', 'symbolSize', 'symbolKeepAspect', 'color', 'backgroundColor', 'dashArrayX', 'dashArrayY', 'maxTileWidth', 'maxTileHeight'];
 /**
- * Create or update pattern image from decal options
+ * Create or update pattern images from decal options
  *
  * @param {InnerDecalObject | 'none'} decalObject decal options, 'none' if no decal
- * @return {Pattern} pattern with generated image, null if no decal
+ * @return {Pattern} pattern with generated images, null if no decal
  */
 
 function createOrUpdatePatternFromDecal(decalObject, api) {
@@ -29696,7 +29696,7 @@ function (_super) {
         }
       });
     });
-    var url = this._zr.painter.getType() === 'svg' ? this.getSvgDataURL() : this.getRenderedCanvas(opts).toDataURL('image/' + (opts && opts.type || 'png'));
+    var url = this._zr.painter.getType() === 'svg' ? this.getSvgDataURL() : this.getRenderedCanvas(opts).toDataURL('images/' + (opts && opts.type || 'png'));
     each$3(excludesComponentViews, function (view) {
       view.group.ignore = false;
     });
@@ -29798,7 +29798,7 @@ function (_super) {
           zr_1.add(img);
         });
         zr_1.refreshImmediately();
-        return targetCanvas.toDataURL('image/' + (opts && opts.type || 'png'));
+        return targetCanvas.toDataURL('images/' + (opts && opts.type || 'png'));
       }
     } else {
       return this.getDataURL(opts);
@@ -39355,7 +39355,7 @@ var SVGPainter = (function () {
         var outerHTML = svgDom.outerHTML
             || (svgDom.parentNode && svgDom.parentNode).innerHTML;
         var html = encodeURIComponent(outerHTML.replace(/></g, '>\n\r<'));
-        return 'data:image/svg+xml;charset=UTF-8,' + html;
+        return 'data:images/svg+xml;charset=UTF-8,' + html;
     };
     return SVGPainter;
 }());
@@ -49554,7 +49554,7 @@ function onIrrelevantElement(e, api, targetCoordSysModel) {
 
 /**
  * Only these tags enable use `itemStyle` if they are named in SVG.
- * Other tags like <text> <tspan> <image> might not suitable for `itemStyle`.
+ * Other tags like <text> <tspan> <images> might not suitable for `itemStyle`.
  * They will not be considered to be styled until some requirements come.
  */
 
@@ -50025,7 +50025,7 @@ function applyOptionStyleForRegion(viewBuildCtx, el, dataIndex, regionModel) {
     if (decal) {
       normalStyle.decal = createOrUpdatePatternFromDecal(decal, viewBuildCtx.api);
     }
-  } // SVG text, tspan and image can be named but not supporeted
+  } // SVG text, tspan and images can be named but not supporeted
   // to be styled by region option yet.
 
 
@@ -78436,7 +78436,7 @@ function (_super) {
           y: -itemSize / 2,
           width: itemSize,
           height: itemSize
-        }); // TODO handling image
+        }); // TODO handling images
 
         path.setStyle(iconStyleModel.getItemStyle());
         var pathEmphasisState = path.ensureState('emphasis');
@@ -78627,7 +78627,7 @@ function (_super) {
             document.body.appendChild(frame);
             var cw = frame.contentWindow;
             var doc = cw.document;
-            doc.open('image/svg+xml', 'replace');
+            doc.open('images/svg+xml', 'replace');
             doc.write(bstr);
             doc.close();
             cw.focus();
@@ -87589,7 +87589,7 @@ function (_super) {
     each([0, 1], function (handleIndex) {
       var iconStr = dataZoomModel.get('handleIcon');
 
-      if (!symbolBuildProxies[iconStr] && iconStr.indexOf('path://') < 0 && iconStr.indexOf('image://') < 0) {
+      if (!symbolBuildProxies[iconStr] && iconStr.indexOf('path://') < 0 && iconStr.indexOf('images://') < 0) {
         // Compatitable with the old icon parsers. Which can use a path string without path://
         iconStr = 'path://' + iconStr;
 

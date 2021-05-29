@@ -29,4 +29,8 @@ urlpatterns = [
     path('inbox/notifications/',include('notifications.urls',namespace='notifications')),
     #消息urls
     path('notifications/',include('my_notification.urls')),
+    #报告urls
+    path('report/',include('report.urls')),
+    #预测urls
+    path('forecast/',include('forecast.urls')),
 ]

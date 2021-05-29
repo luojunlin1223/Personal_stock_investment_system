@@ -7,17 +7,32 @@
 </head>
 <body>uc
 {% block content %}
-    <p>交易所:{{ rep.exchange }}</p>
-    <P>法人代表:{{ rep.chairman }}</P>
-    <P>总经理:{{ rep.manager }}</P>
-    <P>秘书:{{ rep.secretary }}</P>
-    <P>注册资本:{{ rep.reg_capital }}</P>
-    <P>注册日期:{{ rep.setup_date }}</P>
-    <P>省份:{{ rep.province }}</P>
-    <P>城市:{{ rep.city }}</P>
-    <P>网站:{{ rep.website }}</P>
-    <P>邮箱:{{ rep.email }}</P>
-    <P>员工人数:{{ rep.employees }}</P>
+     <h3 class='layui-field-title' style="text-align: center">公司信息</h3>
+    <hr>
+    <div style="padding: 20px">
+        <p>交易所 : {{ rep.exchange }}</p>
+        <br>
+        <P>法人代表 : {{ rep.chairman }}</P>
+        <br>
+        <P>总经理 : {{ rep.manager }}</P>
+        <br>
+        <P>秘书 : {{ rep.secretary }}</P>
+        <br>
+        <P>注册资本 : {{ rep.reg_capital }}</P>
+        <br>
+        <P>注册日期 : {{ rep.setup_date }}</P>
+        <br>
+        <P>省份 : {{ rep.province }}</P>
+        <br>
+        <P>城市 : {{ rep.city }}</P>
+        <br>
+        <P>网站 : <a style="color: blue" href="http://{{ rep.website }}"target="blank">{{ rep.website }}</a></P>
+        <br>
+        <P>邮箱 : {{ rep.email }}</P>
+        <br>
+        <P>员工人数 : {{ rep.employees }}</P>
+    </div>
+
 {% endblock %}
 </body>
 </html>

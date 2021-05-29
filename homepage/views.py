@@ -1,6 +1,5 @@
 import datetime
 import json
-
 import tushare as ts
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.shortcuts import render
@@ -28,8 +27,8 @@ def timedTask():
                 code=code[2:len(code)]+'.'+code[:2]
                 ts.set_token('f281dbc422d80e2350e94b1878bd3b86971de985641877fc42ccd836')
                 pro = ts.pro_api()
-                df = pro.daily(ts_code=code, trade_date=now.strftime("%Y%m%d")).to_json()
-                #df = pro.daily(ts_code=code, trade_date='20210507').to_json()
+                #df = pro.daily(ts_code=code, trade_date=now.strftime("%Y%m%d")).to_json()
+                df = pro.daily(ts_code=code, trade_date='20210507').to_json()
                 df=json.loads(df)
                 if len(df.get('open'))!=0:
                     open=df.get('open')['0']
@@ -53,10 +52,10 @@ def timedTask():
 scheduler = BackgroundScheduler()
 scheduler.add_job(timedTask, 'interval', seconds=2)
 #scheduler.add_job(timedTask, 'interval', days=1)
-
 #scheduler.start()
 
 
 # Create your views here.
 def showhomepage(request):
+
     return render(request, 'homepage/homepage.html')

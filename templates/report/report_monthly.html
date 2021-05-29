@@ -1,0 +1,188 @@
+{% extends 'homepage/homepage.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.6.6/dist/css/layui.css">
+</head>
+<body>
+<meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/layui@2.6.6/dist/css/layui.css">
+{% block content %}
+    <h3 class='layui-field-title' style="text-align: center">{% block title %}我的周报{% endblock %}</h3>
+    <ul class="layui-nav layui-bg-blue" lay-bar="disabled">
+      <li class="layui-nav-item"><a href="#industry">股票种类分布图</a></li>
+      <li class="layui-nav-item"><a href="#industry2">投资金额统计</a></li>
+      <li class="layui-nav-item"><a href="#Financial_statistics">具体金额统计</a></li>
+      <li class="layui-nav-item">
+        <a href="javascript:;">具体收藏股票信息</a>
+        <dl class="layui-nav-child">
+          {% for i in mystock %}
+          <dd><a href="#items_{{ forloop.counter0 }}">{{ i.stock.name }}</a></dd>
+          {% endfor %}
+        </dl>
+      </li>
+    </ul>
+    <div class="layui-bg-gray" style="padding: 30px;">
+        <div class="layui-row layui-col-space15">
+        <div class="layui-col-md6">
+          <div class="layui-panel">
+            <div style="padding: 30px 20px;"><!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+            <div id="industry" style="height:500px"></div>
+            <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+            <script type="text/javascript">
+                var chartDom = document.getElementById('industry');
+                var myChart = echarts.init(chartDom);
+                var option;
+                option = {
+                    title:{
+                      text:'股票种类分布图',
+                      left:'center',
+                    },
+                    legend: {
+                        top: 'bottom'
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    series: [
+                        {
+                            name: '股票种类分布图',
+                            type: 'pie',
+                            radius: [40, 100],
+                            center: ['50%', '50%'],
+                            roseType: 'area',
+                            itemStyle: {
+                                borderRadius: 1
+                            },
+                            data:{{ data|safe }}
+                        }
+                    ]
+                };
+                option && myChart.setOption(option);
+            </script></div>
+          </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="layui-panel">
+            <div style="padding: 30px 5px;">
+                <div id="industry2" style="height:500px"></div>
+            <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+            <script type="text/javascript">
+                var chartDom = document.getElementById('industry2');
+                var myChart = echarts.init(chartDom);
+                var option;
+                option = {
+                    title:{
+                      text:'投资金额统计',
+                      left:'center',
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            mark: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    xAxis: {
+                    type: 'category',
+                    data: {{ name_stock|safe }}
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: {{ money_stock|safe }},
+                        type: 'bar',
+                        showBackground: true,
+                        backgroundStyle: {
+                            color: 'rgba(180, 180, 180, 0.2)'
+                        },
+                        itemStyle: {
+							normal: {
+								label: {
+									show: true, //开启显示
+									position: 'top', //在上方显示
+									textStyle: { //数值样式
+										color: 'black',
+										fontSize: 12
+									}
+								}
+							}
+						},
+
+                    }]
+                };
+                option && myChart.setOption(option);
+            </script>
+            </div>
+          </div></div>
+        </div>
+       <div class="layui-row layui-col-space15" id="Financial_statistics">
+            <div class="layui-col-md6">
+              <div class="layui-card">
+                <div class="layui-card-header">具体金融数据统计</div>
+                <div class="layui-card-body">
+                  <p>我<span style="color:red">{% block time%}本周{% endblock %}</span>一共收藏了<span style="color:red">{{ mystock.count }}</span>支股票</p>
+                    <p>其中投资的总金额为：<span style="color:red">{{ total_money }}</span>元</p>
+                    <p>盈利或者亏损：<span style="color:red">{{ interest }}</span>元</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        <br>
+       <div class="layui-row layui-col-space15" style="width:100%">
+           {% for i in mystock %}
+            <div class="layui-col-md6" id="items_{{ forloop.counter0 }}">
+              <div class="layui-card">
+                <div class="layui-card-header"><span style="color:red">{{ i.stock.name }}</span>的散点图</div>
+                <div class="layui-card-body">
+                       <div style="padding: 30px 20px;"><!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+                        <div id="items{{ forloop.counter0 }}" style="height:500px"></div>
+                        <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+                        <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+                        <script>
+                            var chartDom = document.getElementById('items{{ forloop.counter0 }}');
+                            var myChart = echarts.init(chartDom);
+                            var option;
+                            var i={{ forloop.counter0 }};
+                            var detail={{ detail }};
+                            option = {
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: {show: true},
+                                        saveAsImage: {show: true}
+                                    }
+                                },
+                                xAxis: {},
+                                yAxis: {},
+                                series: [{
+                                    symbolSize: 20,
+                                    data:detail[i],
+                                    type: 'scatter'
+                                }]
+                            };
+
+                            option && myChart.setOption(option);
+
+                        </script>
+                </div>
+              </div>
+            </div>
+          </div>
+            {% endfor %}
+    </div>
+    </div>
+{% endblock %}
+</body>
+</html>

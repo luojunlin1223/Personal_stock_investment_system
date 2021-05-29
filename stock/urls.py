@@ -3,8 +3,8 @@ from django.urls import path
 from stock import views
 app_name = 'stock'
 urlpatterns = [
-    path('info?<int:page>',views.showinfo,name="showinfo"),
-    path('detail',views.showdetail,name="show_detail"),
+    path('info/',views.showinfo,name="showinfo"),
+    path('detail/',views.showdetail,name="show_detail"),
     path('read/',views.read_data,name="read_data"),
     path('delete/',views.delete_data,name="delete_data"),
     path('search/',views.search,name="search"),

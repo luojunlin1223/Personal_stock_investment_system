@@ -18,36 +18,16 @@ ts.set_token('f281dbc422d80e2350e94b1878bd3b86971de985641877fc42ccd836')
 pro = ts.pro_api()
 from stock.models import Stock, Mystock, Condition_Sheet
 
-def showinfo(request, page):
+def showinfo(request):
     global df
-    page = int(page)
-    items_per_page = 10
-    last_page = page - 1
-    nex_page = page + 1
-    total=Stock.objects.all().count()
-    stock = Stock.objects.all().order_by('code')[(page - 1) * items_per_page:page * items_per_page]
-
+    stock = Stock.objects.all().order_by('code')
     json_data=serializers.serialize('json',stock)
     json_data=json.loads(json_data)
+    data=[]
+    for i in json_data:
+        data.append(i['fields'])
+    return render(request, 'stock/showinfo.html',{'rep': data})
 
-    #Json格式转化
-    data={}
-    data['status']=0
-    data['total']=total
-    data['total_page']=math.ceil(total/items_per_page)
-    data['items_per_page']=10
-    data['last_page']=last_page
-    data['now_page']=last_page+1
-    data['next_page']=nex_page
-    data['data'] = json_data
-
-    #Json:
-    #{'status': 0, 'items_per_page': 10, 'last_page': 0, 'next_page': 2, 'data':data}
-    if len(stock) != 0:
-        return render(request, 'stock/showinfo.html',
-                      {'rep': data})
-    else:
-        return HttpResponse(content='超出数据范围！')
 
 def showdetail(request):
     def check_date(date):
@@ -82,38 +62,6 @@ def showdetail(request):
         df = pro.monthly(ts_code=code, start_date=start, end_date=now)
     else:
         return HttpResponse('没有找到相关数据！')
-    # # 原始数据按照日期降序排列
-    # df = df.sort_values(by='trade_date', ascending=True)
-    # df['dates'] = np.arange(0, len(df))
-    # fig, ax = plt.subplots(figsize=(10, 7))
-    # ###candlestick_ochl()函数的参数
-    # # ax 绘图Axes的实例
-    # # quotes  序列（时间，开盘价，收盘价，最高价，最低价） 时间是float类型，date必须转换为float
-    # # width    图像中红绿矩形的宽度,代表天数
-    # # colorup  收盘价格大于开盘价格时的颜色
-    # # colordown   低于开盘价格时矩形的颜色
-    # # alpha      矩形的颜色的透明度
-    # candlestick_ochl(ax, quotes=df[['dates', 'open', 'close', 'high', 'low']].values,
-    #                  width=0.55, colorup='r', colordown='g', alpha=0.95)
-    # date_tickers = df['trade_date'].values
-    #
-    # def format_date(x, pos):
-    #     if (x < 0) or (x > len(date_tickers) - 1):
-    #         return ''
-    #     return date_tickers[int(x)]
-    #
-    # ax.xaxis.set_major_formatter(ticker.FuncFormatter(format_date))  # 按一定规则选取并在水平轴上显示时间刻度
-    # plt.xticks(rotation=30)  # 设置日期刻度旋转的角度
-    # ax.set_ylabel('交易价格')
-    # plt.title(code)
-    # plt.grid(True)  # 添加网格，可有可无，只是让图像好看一些
-    # plt.xlabel('交易日期')
-    #
-    # sio = BytesIO()
-    # plt.savefig(sio, format='png')
-    # data = base64.encodebytes(sio.getvalue()).decode()
-    # src = 'data:image/png;base64,' + str(data)
-    # # 前端只需要将 <img\> 标签的 src 属性赋值为后端发送的 Base64 字符串即可
     json_data=df.to_json(orient="records", force_ascii=False)
     json_data = json.loads(json_data)
     list=[]
@@ -133,12 +81,116 @@ def showdetail(request):
         date=item['trade_date']
         date=date[:4]+'-'+date[4:6]+'-'+date[6:8]
         dates.append(date)
+
     list.reverse()
     dates.reverse()
     volume.reverse()
+
+    #股票分析模块
+    result = ''
+    key = dict()
+    analysis=pro.daily_basic(ts_code=code).to_json(orient="records")
+    analysis=json.loads(analysis)[0]
+
+    turnover=analysis['turnover_rate']
+    volume_ratio=analysis['volume_ratio']
+    pe=analysis['pe']
+
+
+
+    grade=0
+    if turnover is None:
+        result = [None, 0]
+        key['turnover'] = result
+    else:
+        turnover = float(turnover)
+        if turnover < 1:
+            result='流动性很差'
+            grade=1
+        elif turnover>=1 and turnover<2:
+            result = '成交低靡'
+            grade = 2
+        elif turnover >= 2 and turnover < 3:
+            result = '成交温和'
+            grade = 3
+        elif turnover >= 3 and turnover < 5:
+            result = '成交活跃'
+            grade = 4
+        elif turnover >= 5 and turnover < 8:
+            result = '成交大量'
+            grade = 5
+        elif turnover >= 8 and turnover < 15:
+            result = '成交放量'
+            grade = 6
+        elif turnover >= 15 and turnover < 25:
+            result = '成交巨量'
+            grade = 7
+        elif turnover >= 25:
+            result = '成交怪异'
+            grade = 8
+        result = [result, grade]
+        key['turnover'] = result
+
+
+
+    grade = 0
+    if volume_ratio is None:
+        result = [None, 0]
+        key['volume_ratio'] = result
+    else:
+        volume_ratio = float(volume_ratio)
+        if volume_ratio < 0.8:
+            result = '成交量低于正常水平'
+            grade = 1
+        elif volume_ratio >= 0.8 and volume_ratio < 1.5:
+            result = '成交量处于正常水平'
+            grade = 2
+        elif volume_ratio >= 1.5 and volume_ratio < 2.5:
+            result = '成交量温和放量'
+            grade = 3
+        elif volume_ratio >= 2.5 and volume_ratio < 5:
+            result = '成交量明显放量'
+            grade = 4
+        elif volume_ratio >= 5 and volume_ratio < 10:
+            result = '成交量剧烈放量'
+            grade = 5
+        elif volume_ratio >= 10 and volume_ratio < 20:
+            result = '考虑反向操作'
+            grade = 6
+        elif volume_ratio >= 20:
+            result = '成交量极端放量'
+            grade = 7
+        result = [result, grade]
+        key['volume_ratio'] = result
+
+    grade = 0
+    if pe is None:
+        result = [None, 0]
+        key['pe'] = result
+    else:
+        pe = float(pe)
+        if pe < 0:
+            result = '公司盈利为负'
+            grade = 1
+        elif pe >= 0 and pe < 13:
+            result = '价值被低估'
+            grade = 2
+        elif pe >= 13 and pe < 20:
+            result = '价值处于正常水平'
+            grade = 3
+        elif pe >= 20 and pe < 28:
+            result = '价值被高估'
+            grade = 4
+        elif pe >= 28:
+            result = '较高的泡沫性'
+            grade = 5
+        result = [result, grade]
+        key['pe'] = result
+
+
     #日期错误
     #申请接口得到的数据是时间倒序的
-    return render(request, 'stock/detail.html', {'code': code,'dates':dates,'data':list,'volumes':volume})
+    return render(request, 'stock/detail.html', {'code': code,'dates':dates,'data':list,'volumes':volume,'key':key})
 
 
 
@@ -223,7 +275,12 @@ def search(request):
     if len(results)==0:
         return HttpResponse('Noting!')
     else:
-        return render(request,'stock/searchresult.html',{'results':results})
+        json_data = serializers.serialize('json', results)
+        json_data = json.loads(json_data)
+        data = []
+        for i in json_data:
+            data.append(i['fields'])
+        return render(request,'stock/searchresult.html',{'rep':data})
 
 
 
@@ -357,7 +414,7 @@ def interest(request):
     mystock=Mystock.objects.filter(id=id)[0]
     price = mystock.buy_price
     if price is None:
-        return HttpResponse('价格未填写')
+        return HttpResponse('未填写价格')
     code=mystock.stock.code
     code=code[2:len(code)]+'.'+code[:2]
     df = pro.daily(ts_code=code).to_json()

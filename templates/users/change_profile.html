@@ -1,6 +1,4 @@
-{% extends "homepage/homepage.html" %}
-{% load crispy_forms_filters %}
-{% load crispy_forms_tags %}
+{% extends "users/profile.html" %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,24 +9,11 @@
           integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 </head>
 <body>
-{% block content %}
-<!--消息块-->
-{% if messages %}
-<div class="container">
-    {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-secondary{% endif %} alert-dismissible rounded-0 fade show" role="alert">
-        {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
+{% block change_user  %}
 <div class="container">
     <form method="post" enctype="multipart/form-data" action="{% url 'users:change_profile'%}">
         {% csrf_token %}
-        {{ form|crispy }}
+        {{ form.as_p}}
         <button class="btn btn-info btn-sm rounded-0" type="submit">更新资料</button>
     </form>
 </div>

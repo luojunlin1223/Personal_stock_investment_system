@@ -7,33 +7,156 @@
 </head>
 <body>
 {% block content %}
-    <div style="float: right">
-        <div style="float: left">
-            <a href="?code={{ code }}&method=daily">日线图</a>
-            <a href="?code={{ code }}&method=weekly">周线图</a>
-            <a href="?code={{ code }}&method=monthly">月线图</a>
+    <h3 class='layui-field-title' style="text-align: center">股票详细数据</h3>
+    <hr>
 
-        </div>
-
+    <ul class="layui-nav layui-bg-cyan">
+      <li class="layui-nav-item"> <a href="?code={{ code }}&method=daily">日线图</a></li>
+      <li class="layui-nav-item"> <a href="?code={{ code }}&method=weekly">周线图</a></li>
+      <li class="layui-nav-item"> <a href="?code={{ code }}&method=monthly">月线图</a></li>
+    </ul>
+    <div style="padding-top: 10px;float: right;padding-right: 10px">
         <form name="collect" id="collect" method="post" action="{% url "stock:add_favorite" %}">
+            {% csrf_token %}
+            <input type="hidden" name="code" value="{{ code }}">
+            <button class='layui-bg-cyan layui-btn' type="submit">收藏</button>
+            </form>
+    </div>
+    <div style="padding-top:10px;float:right;padding-right: 10px">
+        <form name="company" id="company" method="post" action="{% url "stock:read_company" %}">
         {% csrf_token %}
         <input type="hidden" name="code" value="{{ code }}">
-        <button type="submit">收藏</button>
+        <button class="layui-bg-cyan layui-btn" type="submit">查看公司信息</button>
         </form>
-        <input type="button" name="submit" onclick="history.back(-1);" value="返回">
+    </div>
 
-        <form name="collect" id="collect" method="post" action="{% url "stock:read_company" %}">
+    <div style="padding-top:10px;float:right;padding-right: 10px">
+        <form name="forecast" id="forecast" method="post" action="{% url "forecast:fibonacci" %}">
         {% csrf_token %}
-        <input type="hidden" name="code" value="{{ code }}">
-        <button type="submit">查看公司信息</button>
+        <input type="hidden" name="data" value="{{ data|safe }}">
+        <input type="hidden" name="dates" value="{{ dates }}">
+        <button class="layui-bg-cyan layui-btn" type="submit">查看股票预测</button>
         </form>
+    </div>
 
+    <div class="layui-bg-gray" style="padding: 30px;">
+      <div class="layui-row layui-col-space15">
+        <div class="layui-col-md6">
+          <div class="layui-panel">
+            <div style="padding: 50px 30px;"><div id="main" style="width: 700px;height:400px;padding:20px">
 
     </div>
-{#    <img src="{{ image }}"  alt="">#}
+                <div class="layui-collapse" lay-filter="test">
+                  <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">什么K线图？</h2>
+                    <div class="layui-colla-content">
+                      <p>
+                          股市及期货市场中的K线图的画法包含四个数据，即开盘价、最高价、最低价、收盘价，所有的k线都是围绕这四个数据展开，反映大势的状况和价格信息
+                          <br>
+                          <a style='color:rgba(255,0,72,0.89)' href="http://blog.sina.com.cn/s/blog_756be3da0102xw41.html" target="_blank">查看更多K线图知识</a>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">什么是均线图？</h2>
+                    <div class="layui-colla-content">
+                      <p>
+                          均线反映的是一段时间的股票平均成交价格，分为短期、中长期和长期。均线是重要的技术指标，具有提示作用。均线系统可以为我们判断市场趋势提供帮助。
+                          <br>
+                          <a target="_blank" style='color:rgba(255,0,72,0.89)' href="https://www.zhihu.com/question/48166823">了解更多均线知识</a>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">什么是斐波那契预测？</h2>
+                    <div class="layui-colla-content">
+                      <p>普林斯顿大学经济学家Burton Malkiel在1973年出版的书《随机漫步在华尔街》描述了斐波那契数列市场预测方法，简单的说，该方法认为股票价格振幅是一个数列（时间序列），其中一天（天/周/月）的涨幅等前两天之和，或其中一天的跌幅等于前两天之
+                      <br>
+                          <a target="_blank" style='color:rgba(255,0,72,0.89)' href="https://zhuanlan.zhihu.com/p/370696512">了解更多关于预测</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md6">
+          <div class="layui-panel">
+            <div style="padding: 50px 30px;">
+                    <div id="main2" style="width: 700px;height:400px;padding:20px">
 
-<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-    <div id="main" style="width: 600px;height:400px;"></div>
+                    </div>
+                    <div id="cloud">
+                        <hr>
+                        <h4 style="font-weight: bold;font-size:20px;color:black">股票特征关键词：</h4>
+                        <br>
+                            <div style="font-weight: bold;">
+
+                                {% ifequal key.turnover.0 None %}
+                                {% else %}
+                                     <span style="color:red;border: 2px solid grey;padding: 5px">{{ key.turnover.0}}</span>
+                                {% endifequal %}
+
+                                {% ifequal key.volume_ratio.0 None %}
+                                {% else %}
+                                    <span style="color:green;border: 2px solid grey;padding: 5px">{{ key.volume_ratio.0}}</span>
+                                {% endifequal %}
+
+                                {% ifequal key.pe.0 None %}
+                                {% else %}
+                                    <span style="color:blue;border: 2px solid grey;padding: 5px">{{ key.pe.0}}</span>
+                                {% endifequal %}
+
+
+
+
+                            </div>
+                    </div>
+                    <hr>
+                    <div class="layui-collapse" lay-filter="test">
+                      <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">换手率的评定标准是什么？</h2>
+                        <div class="layui-colla-content">
+                          <p>换手率也称“周转率”，指在一定时间内市场中股票转手买卖的频率，是反映股票流通性强弱的指标之一。
+                          <br>
+                           <br>
+                          一般情况，大多股票每日换手率在1%——2.5%（不包括初上市的股票）。70%的股票的换手率基本在3%以下，3%就成为一种分界。
+                          <br> <br>
+                              当一支股票的换手率在3%——7%之间时，该股进入相对活跃状态。7%——10%之间时，则为强势股的出现，股价处于高度活跃当中。（广为市场关注）10%——15%，大庄密切操作。超过15%换手率，持续多日的话，此股也许成为最大黑马。
+                          </p>
+                        </div>
+                      </div>
+                      <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">量比的评定标准是什么？</h2>
+                        <div class="layui-colla-content">
+                          <p>
+                              量比是衡量相对成交量的指标。它是指股市开市后平均每分钟的成交量与过去5个交易日平均每分钟成交量之比。
+                              <br><br>
+                              量比为0.8-1.5倍，则说明成交量处于正常水平；
+量比在1.5-2.5倍之间则为温和放量，如果股价也处于温和缓升状态，则升势相对健康，可继续持股，若股价下跌，则可认定跌势难以在短期内结束，从量的方面判断应可考虑停损退出；
+量比在2.5-5倍，则为明显放量，若股价相应地突破重要支撑或阻力位置，则突破有效的几率颇高，可以相应地采取行动；
+量比达5-10倍，则为剧烈放量，如果是在个股处于长期低位出现剧烈放量突破，涨势的后续空间巨大，是“钱”途无量的象征，东方集团、乐山电力在5月份突然启动之时，量比之高令人讶异。但是，如果在个股已有巨大涨幅的情况下出现如此剧烈的放量，则值得高度警惕。
+量比达到10倍以上的股票，一般可以考虑反向操作。在涨势中出现这种情形，说明见顶的可能性压倒一切，即使不是彻底反转，至少涨势会休整相当长一段时间。在股票处于绵绵阴跌的后期，突然出现的巨大量比，说明该股在目前位置彻底释放了下跌动能。
+量比达到20倍以上的情形基本上每天都有一两单，是极端放量的一种表现，这种情况的反转意义特别强烈，如果在连续的上涨之后，成交量极端放大，但股价出现“滞涨”现象，则是涨势行将死亡的强烈信号。当某只股票在跌势中出现极端放量，则是建仓的大好时机。
+                          </p>
+                        </div>
+                      </div>
+                      <div class="layui-colla-item">
+                        <h2 class="layui-colla-title">市盈率的评定标准是什么？</h2>
+                        <div class="layui-colla-content">
+                          <p>市盈率（Price Earnings Ratio，简称P/E或PER），也称“本益比”、“股价收益比率”或“市价盈利比率（简称市盈率）”。市盈率是指股票价格除以每股收益(每股收益,EPS)的比率。
+                          <br><br>
+                              一般来说，市盈率水平在14－20之间为正常水平，当市盈率水平小于0 ，指该公司盈利为负；在0－13之间？，其价值被低估；在21－28之间，其价值被高估；大于28；较高的泡沫性。
+                         </p>
+                        </div>
+                      </div>
+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
     <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
     <script type="text/javascript">
@@ -76,7 +199,7 @@
             color: colorList,
             title: {
                 left: 'center',
-                text: '{{ code|safe }} K线图'
+                text: '{{ code|safe }} K线图、均线图'
             },
             legend: {
                 top: 30,
@@ -288,7 +411,41 @@
         };
         // 使用刚指定的配置项和数据显示图表。
         option&&myChart.setOption(option);
+        var chartDom = document.getElementById('main2');
+        var myChart2 = echarts.init(chartDom);
+        var turnover={{ key.turnover.1 }}
+        var volume_ratio={{ key.volume_ratio.1 }}
+        var pe={{ key.pe.1 }}
+        option = {
+            title: {
+                text: '股票特征雷达图'
+            },
+            legend: {
+                data: ['预算分配（Allocated Budget）',]
+            },
+            radar: {
+                shape: 'circle',
+                indicator: [
+                    { name: '流通性（换手率）', max: 8},
+                    { name: '相对成交量（量比）', max: 7},
+                    { name: '股价水平（市盈率）', max: 5},
+                ]
+            },
+            series: [{
+                name: '',
+                type: 'radar',
+                data: [
+                    {
+                        value: [turnover, volume_ratio, pe],
+                        name: '股票特征'
+                    },
+                ]
+            }]
+        };
+
+        option && myChart2.setOption(option);
     </script>
+
 {% endblock %}
 </body>
 </html>

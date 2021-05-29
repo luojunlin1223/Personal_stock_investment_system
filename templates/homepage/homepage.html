@@ -5,13 +5,16 @@
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% load account %}
-
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>个人股票辅助投资系统</title>
     <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.6.6/dist/css/layui.css">
+
+    <script src="https://unpkg.com/layui@2.6.6/dist/layui.js"></script>
     <style>
         .time_span{
             color:white;
@@ -22,39 +25,38 @@
             color:white;
             padding-right: 20px;
         }
-
     </style>
+
 </head>
 <body>
-  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-      <a class="navbar-brand" href="{% url 'showhomepage' %}">个人股票辅助投资系统</a>
+  <nav class="navbar navbar-expand-md layui-bg-cyan" >
+      <a class="navbar-brand" style="color:white" href="{% url 'showhomepage' %}" >个人股票辅助投资系统</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link active" href="{% url 'showhomepage' %}">主页 <span class="sr-only">(current)</span></a>
+        <li class="nav-item active" >
+          <a class="nav-link active" href="{% url 'showhomepage' %}" style="color:white">主页 <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'stock:showinfo' page=1 %}" id="test">股票信息</a>
+          <a class="nav-link active" href="{% url 'stock:showinfo'%}" id="test" style="color:white">股票信息</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled" href="{% url 'stock:read_data' %}">读取信息</a>
+          <a class="nav-link disabled" href="{% url 'stock:read_data' %}" >读取信息</a>
         </li>
           <li class="nav-item">
-          <a class="nav-link disabled" href="{% url 'stock:delete_data' %}">清空数据库</a>
+          <a class="nav-link disabled" href="{% url 'stock:delete_data' %}" >清空数据库</a>
         </li>
       </ul>
       <div>
           	<script>
 		window.onload = function(){
-			var span = document.getElementById("time_now");
-			var state_span=document.getElementById("state_now");
-			var dateStr = formatDate();
-			// 将时间放置到span内
-			span.innerText = dateStr;
+            const span = document.getElementById("time_now");
+            const state_span = document.getElementById("state_now");
+            // 将时间放置到span内
+			span.innerText = formatDate();
 			// 每隔一秒，再放置一次最新的时间
 			setInterval(function(){
 				span.innerText = formatDate();
@@ -62,27 +64,27 @@
 			},1000);
 			//格式化年月日时分秒
 			function formatDate(){
-				var date = new Date();
-				var year = date.getFullYear();
-				var month = date.getMonth()+1;
-				month = month<10?'0'+month:month;
-				var day = date.getDate();
-				day = day<10?'0'+day:day;
-				var hours = date.getHours();
-				hours = hours<10?'0'+hours:hours;
-				var minutes = date.getMinutes();
-				minutes = minutes<10?'0'+minutes:minutes;
-				var seconds = date.getSeconds();
-				seconds = seconds<10?'0'+seconds:seconds;
+                const date = new Date();
+                const year = date.getFullYear();
+                let month = date.getMonth() + 1;
+                month = month<10?'0'+month:month;
+                let day = date.getDate();
+                day = day<10?'0'+day:day;
+                let hours = date.getHours();
+                hours = hours<10?'0'+hours:hours;
+                let minutes = date.getMinutes();
+                minutes = minutes<10?'0'+minutes:minutes;
+                let seconds = date.getSeconds();
+                seconds = seconds<10?'0'+seconds:seconds;
 				// 2019-07-23 09:40:30
 				return year+'-'+month+'-'+day+' '+hours+':'+minutes+':'+seconds;
 			}
 			//获取交易状态
             function state() {
-			    var date = new Date();
-			    var hours=date.getHours();
-			    var minutes=date.getMinutes();
-			    if (hours<9 || hours>15){
+                const date = new Date();
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                if (hours<9 || hours>15){
 			        return '已收盘';
                 }
 			    else if(hours<=11&&minutes<=30){
@@ -108,18 +110,16 @@
       <div>
         <form class="form-inline my-2 my-lg-0" style="padding-right:30px" action="{% url 'stock:search' %}" method="get">
           <input class="form-control mr-sm-2" type="search" placeholder="请输入股票代码" aria-label="Search" name="keywords">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+          <button class="btn btn-outline-success my-2 my-sm-0 layui-bg-gray" type="submit" style="color:white">搜索</button>
         </form>
       </div>
       <ul class="nav navbar-nav navbar-right">
         {% if user.is_authenticated %}
           <li class="nav-item dropdown">
-            <button class="dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{ user.username }}<b class="caret"></b>
-            </button>
+            <img alt style="border-radius: 70px;height: 40px" src="https://himg.bdimg.com/sys/portraitn/item/274671313634393931323335345e36" class="dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span style="color:snow">{{ user.username }}</span><b class="caret"></b>
             <div class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="navbarDropdown">
             {% notifications_unread as unread_count %}
-
                  <a class="dropdown-item" href="{% url 'my_notification:read_notifications' %}">
                      {% if unread_count %}
                         <svg viewBox="0 0 8 8"
@@ -136,7 +136,10 @@
 
               <a class="dropdown-item" href="{% url 'users:profile' %}">我的信息</a>
               <a class="dropdown-item" href="{% url 'stock:read_favorite' %}">我的股票</a>
-              <a class="dropdown-item" >我的财务报告</a>
+              <a class="dropdown-item" href="{% url 'report:monthly' %}">我的财务月报</a>
+              <a class="dropdown-item" href="{% url 'report:seasonal' %}">我的财务季报</a>
+              <a class="dropdown-item" href="{% url 'report:yearly' %}">我的财务年报</a>
+
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="{% url 'account_logout' %}">退出</a>
             </div>
@@ -148,9 +151,95 @@
         {% endif %}
       </ul>
     </div>
-  </nav>
-  {% block content %}
 
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+    </fieldset>
+      </nav>
+
+  {% block content %}
+   <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>欢迎使用个人股票投资系统</legend>
+   </fieldset>
+
+    <div class="layui-bg-gray" style="padding: 30px;">
+      <div class="layui-row layui-col-space15">
+
+        <div class="layui-col-md6" style="width:min-content">
+          <div class="layui-panel" style="width:min-content">
+                <div class="layui-carousel" id="carousel">
+                  <div carousel-item="">
+                    <div><img src="https://img2.baidu.com/it/u=1247753653,1934884264&fm=26&fmt=auto&gp=0.jpg" alt></div>
+                    <div><img src="https://img1.baidu.com/it/u=3465532300,341454846&fm=26&fmt=auto&gp=0.jpg" alt></div>
+                    <div><img src="https://img2.baidu.com/it/u=2082942930,2147637407&fm=26&fmt=auto&gp=0.jpg" alt></div>
+                    <div><img src="https://img0.baidu.com/it/u=3177361238,504306562&fm=26&fmt=auto&gp=0.jpg" alt></div>
+                    <div><img src="https://img2.baidu.com/it/u=2169990225,4211076177&fm=26&fmt=auto&gp=0.jpg" alt></div>
+                  </div>
+                <script>
+                layui.use(['carousel', 'form'], function(){
+                    const carousel = layui.carousel
+                        , form = layui.form;
+
+                    //图片轮播
+                  carousel.render({
+                    elem: '#carousel'
+                    ,width: '530px'
+                    ,height: '300px'
+                    ,interval: 5000
+                  });
+
+                });
+                </script>
+                </div>
+          </div>
+        </div>
+        <div class="layui-col-md6">
+          <div class="layui-panel" style="padding: 10px">
+                <h3 style="text-align:center;margin-top:10px;color: black">公告</h3>
+                <div class="items_gonggao">
+                    <hr>
+                    <em style="margin-left:10px;color:dodgerblue">【公告】</em>
+                    <a style="font-weight:bold;color: red">系统完成预测线设计</a>
+                    <span>05-29</span>
+                </div>
+                <div class="items_gonggao">
+                    <hr>
+                    <em style="margin-left:10px;color:dodgerblue">【公告】</em>
+                    <a style="font-weight:bold;color: red">系统更新新的股票预测内容</a>
+                    <span>05-26</span>
+                </div>
+                <div class="items_gonggao">
+                    <hr>
+                    <em style="margin-left:10px;color:dodgerblue">【公告】</em>
+                    <a style="font-weight:bold;color: red">系统更新新的股票信息界面</a>
+                    <span>05-24</span>
+                </div>
+                <div class="items_gonggao">
+                    <hr>
+                    <em style="margin-left:10px;color:dodgerblue">【公告】</em>
+                    <a style="font-weight:bold;color: red">系统更新新的操作界面</a>
+                    <span>05-23</span>
+                </div>
+                <div class="items_gonggao">
+                    <hr>
+                    <em style="margin-left:10px;color:dodgerblue">【公告】</em>
+                    <a style="font-weight:bold;color: red">系统更新股票分析内容</a>
+                    <span>05-22</span>
+                </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
   {% endblock %}
+    <div class="layui-footer footer footer-demo" style="float: left;">
+      <div class="layui-container">
+          <hr >
+        <p>© 2021 LG</p>
+        <p>
+          <a>渝ICP备000000000号</a>
+        </p>
+             <hr>
+      </div>
+    </div>
 </body>
 </html>

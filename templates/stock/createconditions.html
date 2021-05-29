@@ -13,33 +13,69 @@
             text-align: center;
         }
     </style>
-    <h2 id="name_code"></h2>
-    <h2 id="current_price"></h2>
-    <h2 id="increase"></h2>
-    <h2 id="ups_and_downs"></h2>
-    <h3>触发条件</h3>
-    <form action="{% url 'stock:add_conditions' %}" method="post">
-    {% csrf_token %}
-        <input id="upload_stock" type="hidden" name="stock">
-        <label>
-            参考基准价<input  id='price' class="conditions" type="text" name="ref_price" value="2000" required>
-            <br>
-            止赢条件>=<input  class="conditions" type="text" name="s_w" value="+5.0000%" required>
-            <br>
-            止损条件<=<input  class="conditions" type="text" name="s_l" value="-5.0000%" required>
-        </label>
-        <h3>截止日期</h3>
-        <label>
-            <input type="date" name="date" value="" required>
-        </label>
-        <br>
-        <button type="submit">提交创建</button>
-</form>
+    <h3 class='layui-field-title' style="text-align: center">新建一个条件表</h3>
+    <hr>
+     <div class="layui-row layui-col-space15" style="margin-left: 30%;padding:20px">
+      <div class="layui-col-md6">
+        <div class="layui-panel">
+            <div style="padding: 30px;">
+                <h3 style="color:black;text-align:center">股票基本信息</h3>
+                <br><br>
+                <ul>
+                    <li id="name_code" style="color:black;list-style:square"></li>
+                    <br>
+                    <li id="current_price" style="color:black;list-style:square"></li>
+                     <br>
+                    <li id="increase" style="color:black;list-style:square"></li>
+                     <br>
+                    <li id="ups_and_downs" style="color:black;list-style:square"></li>
+                     <br>
+                </ul>
+                <br>
+                <br>
+                <hr>
+                <h3 style="color:black;text-align:center">触发条件</h3>
+                <br><br><br>
+                <form action="{% url 'stock:add_conditions' %}" method="post" style="padding:30px">
+                {% csrf_token %}
+                    <input id="upload_stock" type="hidden" name="stock">
+                    <label>
+                        <span style="color:black">参考基准价</span><input  id='price' class="conditions" type="text" name="ref_price" value="2000" required>
+                        <br><br>
+                        <span style="color:black">止赢条件>=</span><input  class="conditions" type="text" name="s_w" value="+5.0000%" required>
+                        <br><br>
+                        <span style="color:black">止损条件<=</span><input  class="conditions" type="text" name="s_l" value="-5.0000%" required>
+                        <br><br>
+                    </label>
+                    <h4 style="color:black">截止日期</h4>
+                    <br>
+                    <label>
+                        <input type="date" name="date" value="" required>
+                    </label>
+                    <br>
+                    <button class='layui-btn' type="submit" style="float:right;">提交创建</button>
+                </form>
+            </div>
+        </div>
+        <div class="layui-panel">
+          <div style="padding: 30px;">
+              <h4 style="color:black;text-align:center">股票止盈止损条件单填写说明</h4>
+              <br><br>
+              <ul>
+                  <li style="list-style: disc">参考基准价：填写购买股票时的买入价格，填写时默认为股票当前的开盘价格</li>
+                  <br>
+                  <li style="list-style: disc">止赢止损条件：当股票价格涨或跌到设置的百分比时系统便会通知用户</li>
+              </ul>
+          </div>
+        </div>
+      </div>
+     </div>
+
     <script type="text/javascript">
 
         var stock=JSON.parse('{{ rep|safe }}');
         stock=stock.data[0].fields;
-        document.getElementById("name_code").innerText=stock.name+":"+stock.code;
+        document.getElementById("name_code").innerText=stock.name+" :  "+stock.code;
         document.getElementById("current_price").innerText="现价："+stock.current_price;
         document.getElementById("increase").innerText="涨幅："+stock.increase;
         document.getElementById("ups_and_downs").innerText="涨跌："+stock.ups_and_downs;

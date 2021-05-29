@@ -8,7 +8,8 @@
 <body>
 {% block content %}
 
-    <h3 style="text-align: center">我的股票</h3>
+    <h3 class='layui-field-title ' style="text-align: center">我的股票</h3>
+    <hr>
     <div class="btn-toolbar" style="background-color: cornflowerblue">
         <div class="btn-group">
             <script type="text/javascript">
@@ -83,36 +84,32 @@
                 {% if item.buy_count %}
                 <p>{{ item.buy_count }}</p>
                 {% else %}
-                    <div id="ajax">
-                        <p><a style="color:red">X </a>还没有填写？</p>
+
                             <label>
-                                <input type="number" id="count" onblur="alter_count({{ item.id }})">
+                                <input type="number" id="count{{ forloop.counter0 }}" onblur="alter_count({{ item.id }},{{ forloop.counter0 }})">
                             </label>
-                    </div>
                 {% endif %}
             </td>
             <td>
                 {% if item.buy_price %}
                 <p>{{ item.buy_price }}</p>
                 {% else %}
-                    <div id="ajax">
-                        <p><a style="color:red">X </a>还没有填写？</p><label>
-                        <input type="number" id="price" onblur="alter_price({{ item.id }})">
+                        <label>
+                        <input type="number" id="price{{ forloop.counter0 }}" onblur="alter_price({{ item.id }},'{{ forloop.counter0 }}')">
                     </label>
-                    </div>
+
                 {% endif %}
             </td>
             <td>
-                <p type="hidden" id="interest"></p>
+                <p type="hidden" id="interest{{ forloop.counter0 }}"></p>
             </td>
             <td>{{ item.created_on }}</td>
             <script>
-                    interest();
-                    function alter_price(number){
-                        const price = document.getElementById('price');
-                        const ajax=document.getElementById('ajax');
-                        if(price.value.length===0){
-                            alert("输入的数字不能为空！");
+                    interest({{ item.id }},{{ forloop.counter0 }});
+                    function alter_price(number,items){
+                        var i=document.getElementById('price'+items);
+                        if(i.value.length===0){
+                            console.log("输入的数字不能为空！");
                         }
                         else{
                             $.ajax(
@@ -121,24 +118,23 @@
                                         type: 'post',
                                         data:{
                                             'id':number,
-                                            'price_input':price.value,
+                                            'price_input':i.value,
                                             'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
                                         },
                                         success: function(data){
                                             const node = document.createElement('p');
                                             node.innerText=data;
-                                            ajax.replaceWith(node);
-                                            interest();
+                                            i.replaceWith(node);
+                                            interest(number,items);
                                         },
                                     }
                                 )
                             }
                         }
-                    function alter_count(number){
-                        const count = document.getElementById('count');
-                        const ajax=document.getElementById('ajax');
-                        if((count.value).length===0){
-                            alert("输入的数字不能为空！");
+                    function alter_count(number,items){
+                        var i=document.getElementById('count'+items);
+                        if(i.value.length===0){
+                            console.log("输入的数字不能为空！");
                         }
                         else{
                             $.ajax(
@@ -147,31 +143,31 @@
                                         type: 'post',
                                         data:{
                                             'id':number,
-                                            'count_input':count.value,
+                                            'count_input':i.value,
                                             'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
                                         },
                                         success: function(data){
                                             const node = document.createElement('p');
                                             node.innerText=data;
-                                            ajax.replaceWith(node);
+                                            i.replaceWith(node);
+                                            interest(number,items);
                                         },
                                     }
                                 )
                         }
                             }
-                    function interest(){
-                        const p=document.getElementById('interest');
+                    function interest(number,items){
+                        var i=document.getElementById('interest'+items);
                     $.ajax(
                         {
                             url: '{% url 'stock:interest' %}',
                             type: 'post',
                             data:{
-                                'id':'{{ item.id }}',
+                                'id':number,
                                 'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
                             },
                             success: function(data){
-                                p.type='text';
-                                p.innerText=data;
+                                i.innerText=data;
                             },
                         }
                     )

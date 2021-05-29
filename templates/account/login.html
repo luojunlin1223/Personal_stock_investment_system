@@ -1,0 +1,43 @@
+{% load static %}
+{% load i18n %}
+{% load account socialaccount %}
+<link href="{% static 'account/css/style.css' %}" rel='stylesheet' type='text/css' />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Login , registration, forgot password "/>
+    <link href='http://fonts.googleapis.com/css?family=Cabin:400,500,600,700,400italic,500italic,600italic,700italic' rel='stylesheet' type='text/css'>
+
+{% get_providers as socialaccount_providers %}
+<div class="login-01">
+		<div class="one-login  hvr-float-shadow">
+			<div class="one-login-head">
+					<img src="{% static 'account/images/top-lock.png' %}" alt=""/>
+					<h1>登录</h1>
+					<span></span>
+			</div>
+			<form class="login" method="POST" action="{% url 'account_login' %}">
+                {% csrf_token %}
+				{{ form.as_p }}
+				<div class="p-container">
+						<h6><a href="{% url 'account_reset_password' %}">忘记密码?</a> </h6>
+							<div class="clear"> </div>
+				</div>
+                {% if redirect_field_value %}
+                  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+				<div class="submit">
+						<input class='primaryAction' type="submit"  value="登录" >
+				</div>
+                {% if socialaccount_providers %}
+				<div class="social-icons">
+					<p>或者你可以使用以下第三方网站登录</p>
+						<ul class="soc_icons2">
+							<li class="pic">{% include "socialaccount/snippets/provider_list.html" with process="login" %}</li>
+								<div class="clear"> </div>
+						</ul>
+				</div>
+                {% endif %}
+					<h5>还没有账户?<a href="{% url 'account_signup' %}"> 注册一个账号 </a></h5>
+				</form>
+		</div>
+	</div>

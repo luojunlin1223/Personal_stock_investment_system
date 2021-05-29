@@ -1,0 +1,32 @@
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<link href="{% static 'account/css/style.css' %}" rel='stylesheet' type='text/css' />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="Login , registration, forgot password "./>
+		<link href='http://fonts.googleapis.com/css?family=Cabin:400,500,600,700,400italic,500italic,600italic,700italic' rel='stylesheet' type='text/css'>
+<div class="login-02">
+    <div class="two-login hvr-float-shadow">
+        <div class="two-login-head">
+            <img src="{% static 'account/images/top-note.png'%}" alt>
+            <h2>注册</h2>
+        </div>
+        <p>{% blocktrans with provider_name=account.get_provider.name site_name=site.name %}你正在尝试使用你的 {{provider_name}} 账户登录
+{{site_name}}. 作为最后一步你需要完成以下信息的填写:{% endblocktrans %}</p>
+        <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+          {% csrf_token %}
+          {{ form.as_p }}
+          {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+          {% endif %}
+          <div class="submit two">
+              <input type="submit"  value="注册" >
+          </div>
+            <h5>已经有一个账户?<a href="{% url 'account_login' %}"> 在这里登录</a></h5>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

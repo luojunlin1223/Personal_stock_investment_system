@@ -64,6 +64,7 @@ class Stock(models.Model):
         verbose_name='股票'
         verbose_name_plural='股票'
 
+
 class Condition_Sheet(models.Model):
     ref_price=models.CharField(verbose_name='参考基准价',max_length=20,null=True)
     s_w = models.CharField(verbose_name='止赢条件', max_length=20,null=True)

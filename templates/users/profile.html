@@ -4,21 +4,98 @@
 <head>
     <meta charset="UTF-8">
     <title>个人资料</title>
+    <meta name="renderer" content="webkit">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+       <link rel="stylesheet" href="https://unpkg.com/layui@2.6.6/dist/css/layui.css">
+        <script src="https://unpkg.com/layui@2.6.6/dist/layui.js"></script>
 </head>
 <body>
 {% block content %}
-<h3 style="text-align: center">个人资料</h3>
-{% if user.is_authenticated %}
-<a href="{% url 'users:change_profile' %}">修改资料</a>
-{% endif %}
+    <h3 class='layui-field-title' style="text-align: center">个人资料</h3>
+    <hr>
+<div class="layui-tab" >
+  <ul class="layui-tab-title" >
+    <li class="layui-this">基本资料</li>
+    <li>账号密码管理</li>
+  </ul>
+  <div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+            <h4>个人基本信息</h4>
+            <br>
+            <div class="layui-bg-gray" style="padding: 10px;">
+              <div class="layui-row layui-col-space15">
+                <div class="layui-col-md6">
+                  <div class="layui-panel">
+                    <div style="padding: 50px 30px;">
+                        <div style="margin-left:20px">
+                            {% block change_user %}
+                            <h6>用户名：{{ user.username }}</h6>
+                            <ul>
+                                <li>邮箱：{{ user.email }}</li>
+                                <li>昵称:
+                                    {% if user.nickname %}
+                                    {{ user.nick_name }}
+                                    {% else %}
+                                        尚未填写
+                                    {% endif %}
+                                </li>
+                                <li>电话:
+                                    {% if user.mobile %}
+                                    {{ user.mobile }}
+                                    {% else %}
+                                        尚未填写
+                                    {% endif %}
+                                </li>
+                                <li>地址:
+                                    {% if user.address %}
+                                    {{ user.address }}
+                                    {% else %}
+                                        尚未填写
+                                    {% endif %}
+                                </li>
+                                 {% if user.is_authenticated %}
+                                <a href="{% url 'users:change_profile' %}">修改资料</a>
+                                {% endif %}
+                            </ul>
+                            {% endblock %}
+                        </div>
+                    </div>
+                  </div>
+                </div>
+    </div>
 
-<p>欢迎, 用户：{{ user.username }}</p>
+  </div>
+</div>
+    <div class="layui-tab-item">
+            <h4>账号密码管理</h4>
+            <br>
+            <div class="layui-bg-gray" style="padding: 10px;">
+              <div class="layui-row layui-col-space15">
+                <div class="layui-col-md6">
+                  <div class="layui-panel">
+                    <div style="padding: 50px 30px;">
+                        <div style="margin-left:20px">
+                            <h6>用户名：{{ user.username }}</h6>
+                            <ul>
+                                <li>邮箱：{{ user.email }}</li>
+                                <li>账户创建于：{{ user.date_joined }}</li>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'account_reset_password' %}">重置密码</a>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+    </div>
+    <div class="layui-tab-item">内容2</div>
 
-<ul>
-    <li>昵称: {{ user.nick_name }}</li>
-    <li>电话: {{ user.mobile }}</li>
-    <li>地址: {{ user.address }}</li>
-</ul>
+  </div>
+</div>
+  </div>
+</div>
 {% endblock %}
+
 </body>
 </html>
